@@ -1,10 +1,13 @@
-/*****************************************/
-/* "chess.cpp", and its relevant header  */
-/* file, "chess.h", were created by the  */
-/* author, Sach Patel. They were written */
-/* using C++11 rules and conventions.    */
-/*****************************************/
+/******************************************/
+/* "chess.cpp", and its relevant header   */
+/* file, "chess.h", were created by the   */
+/* author, Sach Patel. They were written  */
+/* using C++11 rules and conventions.     */
+/******************************************/
 
+/***** TO CREATE THE EXECUTABLE FILE: *****/
+/* "g++ -std=c++11 chess.cpp -o chess"    */
+/******************************************/
 
 /* Includes */
 #include <iostream>
