@@ -6,7 +6,7 @@ namespace chess {
         char y;
     };
     
-    // The pieces on the board
+    // Define a game piece
     class Piece {
     public:
         bool taken;
@@ -16,6 +16,50 @@ namespace chess {
     protected:
     private:
     };
+    
+    /* To integrate later, not sure how to use this properly yet */
+    class King : public Piece {
+    public:
+    protected:
+        bool checked;
+        bool can_castle_qs;
+        bool can_castle_ks;
+    private:
+    };
+    
+    class Queen : public Piece {
+    public:
+    protected:
+    private:
+    };
+    
+    class Rook : public Piece {
+    public:
+    protected:
+        bool can_castle;
+    private:
+    };
+    
+    class Bishop : public Piece {
+    public:
+    protected:
+    private:
+    };
+    
+    class Knight : public Piece {
+    public:
+    protected:
+    private:
+    };
+    
+    class Pawn : public Piece {
+    public:
+    protected:
+        bool first_move;
+        bool can_promote;
+    private:
+    };
+    /*************************************************************/
     
     // The game players
     class Player {
@@ -36,14 +80,14 @@ namespace chess {
     private:
     };
     
-    // Player 1, extends Class Player
+    // Player 1, extends class Player
     class Player_One : public Player {
     public:
     protected:
     private:
     };
     
-    // Player 2, extends Class Player
+    // Player 2, extends class Player
     class Player_Two : public Player {
     public:
         // Check if the player is a computer
@@ -111,6 +155,7 @@ namespace chess {
     public:
         position coordinates () { return cell_num; };
         char colour () { return white ? 'W' : 'B'; };
+        Square (position cell_num, bool occupied, bool white) : cell_num (cell_num), occupied (occupied), white (white) {};
         void is_occupied (const Player_One& p1, const Player_Two& p2) {
             for (auto& cp : p1.pieces) {
                 if (cp->pos.x == cell_num.x && cp->pos.y == cell_num.y) {
@@ -126,7 +171,6 @@ namespace chess {
             }
             occupied = false;
         }
-        Square (position cell_num, bool occupied, bool white) : cell_num (cell_num), occupied (occupied), white (white) {};
     protected:
         bool occupied;
         position cell_num;
@@ -150,6 +194,7 @@ namespace chess {
             }
         }
         void print_board (void) {
+            std::cout << std::endl;
             for (auto& sq : board) {
                 position p = sq->coordinates();
                 std::cout << p.x << p.y << '{' << sq->colour() << '}';

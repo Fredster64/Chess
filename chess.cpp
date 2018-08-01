@@ -67,6 +67,7 @@ int main (void) {
     cb.board_init();
     
     // Debug only: Print the vector of board elements to the console.
+    std::cout << "Game Board:" << std::endl;
     cb.print_board();
     
     // Define and set up the game engine.
@@ -74,7 +75,9 @@ int main (void) {
     g.setup(p1, p2);
     
     // Debug only : Print the vector of pieces to the console.
+    std::cout << "Player 1:" << std::endl;
     p1.print_pieces();
+    std::cout << "Player 2:" << std::endl;
     p2.print_pieces();
     
     return 0;
