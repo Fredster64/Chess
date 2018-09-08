@@ -2,6 +2,7 @@
 #define CHESS_H
 
 #include <iostream>
+#include <vector>
 
 namespace chess {
     
@@ -10,43 +11,26 @@ namespace chess {
         uint8_t y;
     };
     
-    /* Class for the Game Engine. Stores the game information. */
-    class GameEngine {
-    public:
-        GameEngine (bool player_colour); // constructor
-        ~GameEngine (void); // destructor
-        void place_pawns (bool c);
-        void place_knights (bool c);
-        void place_bishops (bool c);
-        void place_rooks (bool c);
-        void place_royals (bool c);
-        void print_board (void); // prints the current board
-    private:
-        bool is_white; // stores if the player White (1) or Black (0).
-        uint8_t board[8][8]; // 8 bit-flags per square.
-        bool turn; // saves the colour of the piece currently moving
-    };
-    /***********************************************************/
-    
     /* Classes for the Game Pieces. Created by the Engine directly. */
     class Piece {
     public:
-        Piece (bool player_colour, pos coordinates); // constructor
+        Piece (bool player_colour, pos coordinates, uint8_t& status_bits); // constructor
         ~Piece (); // destructor
+        uint8_t check_gs () { return *pgs; };
+        // virtual void check_moves () = 0;
     protected:
         bool is_white; // stores if the piece is White (1) or Black (0).
+        bool is_taken;
         pos position; // the x-y posistion of the piece.
+        std::vector<pos> valid_moves;
+        uint8_t* pgs; // *pgs = game_status, pgs = &game_status.
     private:
     };
-    
-    Piece :: Piece (bool piece_colour, pos coordinates) {
-        is_white = piece_colour;
-        position = coordinates;
-    }
     
     class Pawn : public Piece {
     public:
         using Piece :: Piece;
+        void check_moves ();
     protected:
     private:
     };
@@ -54,6 +38,7 @@ namespace chess {
     class Knight : public Piece {
     public:
         using Piece :: Piece;
+        void check_moves ();
     protected:
     private:
     };
@@ -61,6 +46,7 @@ namespace chess {
     class Bishop : public Piece {
     public:
         using Piece :: Piece;
+        void check_moves ();
     protected:
     private:
     };
@@ -68,6 +54,7 @@ namespace chess {
     class Rook : public Piece {
     public:
         using Piece :: Piece;
+        void check_moves ();
     protected:
     private:
     };
@@ -75,6 +62,7 @@ namespace chess {
     class Queen : public Piece {
     public:
         using Piece :: Piece;
+        void check_moves ();
     protected:
     private:
     };
@@ -82,74 +70,126 @@ namespace chess {
     class King : public Piece {
     public:
         using Piece :: Piece;
+        void check_moves ();
     protected:
     private:
     };
     /****************************************************************/
     
+    /* Class for the Game Engine. Stores the game information. */
+    class GameEngine {
+    public:
+        GameEngine (bool player_colour); // constructor
+        ~GameEngine (void); // destructor
+        void print_board (void); // prints the current board
+    protected:
+    private:
+        bool is_white; // stores if the player White (1) or Black (0).
+        uint8_t** board; // 8 bit-flags per square.
+        /**************************************************/
+        /* if Bit0 HIGH - Pawn on this square.            */
+        /* if Bit1 HIGH - Knight on this square.          */
+        /* if Bit2 HIGH - Bishop on this square.          */
+        /* if Bit3 HIGH - Rook on this square.            */
+        /* if Bit4 HIGH - Queen on this square.           */
+        /* if Bit5 HIGH - King on this square.            */
+        /* if Bit6 HIGH - Unassigned.                     */
+        /* if Bit7 HIGH - Colour of the square.           */
+        /**************************************************/
+        uint8_t game_status; // 8 bit-flags to check the status of the game.
+        /**************************************************/
+        /* if Bit0 HIGH - Whites turn, else Blacks turn.  */
+        /* if Bit1 HIGH - White won the game.             */
+        /* if Bit2 HIGH - Black won the game.             */
+        /* if Bit3 HIGH - White Pawn to be promoted.      */
+        /* if Bit4 HIGH - Black Pawn to be promoted.      */
+        /* if Bit5 HIGH - Current player is in Check.     */
+        /* if Bit6 HIGH - Current player is in Checkmate. */
+        /* if Bit7 HIGH - Game is in Stalemate.           */
+        /**************************************************/
+        std::vector<Piece*> game_pieces; // stores the game pieces in a vector.
+        /* Functions that create and place the pieces upon class construction */
+        void place_pawns (const bool& c, const uint8_t& r);
+        void place_knights (const bool& c, const uint8_t& r);
+        void place_bishops (const bool& c, const uint8_t& r);
+        void place_rooks (const bool& c, const uint8_t& r);
+        void place_royals (const bool& c, const uint8_t& r);
+    };
+    /***********************************************************/
+    
     GameEngine :: GameEngine (bool player_colour) {
         is_white = player_colour;
-        turn = true;
+        game_status = 0x01; // normal, white to move first.
         /* Set up the game board */
+        board = new uint8_t*[8];
         for (uint8_t i = 0; i < 8; ++i) {
+            board[i] = new uint8_t[8];
             for (uint8_t j = 0; j < 8; ++j) {
                 board[i][j] = 0;
             }
         }
         bool colour = true;
+        uint8_t row = 6;
         do {
-            place_pawns (colour);
-            place_knights (colour);
-            place_bishops (colour);
-            place_rooks (colour);
-            place_royals (colour);
+            place_pawns (colour, row);
+            colour ? ++row : --row;
+            place_knights (colour, row);
+            place_bishops (colour, row);
+            place_rooks (colour, row);
+            place_royals (colour, row);
             colour = !colour;
+            row = 1;
         } while (!colour);
+        
         print_board ();
     }
     
     GameEngine :: ~GameEngine (void) {
-        
-    }
-    
-    void GameEngine :: place_pawns (bool c) {
-        uint8_t row = c ? 6 : 1; // white on R6, black on R1.
         for (uint8_t i = 0; i < 8; ++i) {
-            Pawn* pawn = new Pawn (c, {i, row});
-            board[i][row] |= 0x01; // saves info that a pawn is on that square.
+            delete board[i];
+        }
+        delete board;
+    }
+    
+    void GameEngine :: place_pawns (const bool& c, const uint8_t& r) {
+        for (uint8_t i = 0; i < 8; ++i) {
+            Pawn* pawn = new Pawn (c, {i, r}, game_status);
+            game_pieces.push_back(pawn);
+            board[i][r] |= 0x01; // saves info that a pawn is on that square.
         }
     }
     
-    void GameEngine :: place_knights (bool c) {
-        uint8_t row = c ? 7 : 0; // white on R7, black on R0.
+    void GameEngine :: place_knights (const bool& c, const uint8_t& r) {
         for (uint8_t i = 1; i < 8; i += 5) {
-            Knight* knight = new Knight (c, {i, row});
-            board[i][row] |= 0x02; // saves info that a knight is on that square.
+            Knight* knight = new Knight (c, {i, r}, game_status);
+            game_pieces.push_back(knight);
+            board[i][r] |= 0x02; // saves info that a knight is on that square.
         }
     }
     
-    void GameEngine :: place_bishops (bool c) {
-        uint8_t row = c ? 7 : 0; // white on R7, black on R0.
+    void GameEngine :: place_bishops (const bool& c, const uint8_t& r) {
         for (uint8_t i = 2; i < 8; i += 3) {
-            Bishop* bishop = new Bishop (c, {i, row});
-            board[i][row] |= 0x04; // saves info that a bishop is on that square.
+            Bishop* bishop = new Bishop (c, {i, r}, game_status);
+            game_pieces.push_back(bishop);
+            board[i][r] |= 0x04; // saves info that a bishop is on that square.
         }
     }
     
-    void GameEngine :: place_rooks (bool c) {
-        uint8_t row = c ? 7 : 0; // white on R7, black on R0.
+    void GameEngine :: place_rooks (const bool& c, const uint8_t& r) {
         for (uint8_t i = 0; i < 8; i+=7) {
-            Rook* rook = new Rook (c, {i, row});
-            board[i][row] |= 0x08; // saves info that a rook is on that square.
+            Rook* rook = new Rook (c, {i, r}, game_status);
+            game_pieces.push_back(rook);
+            board[i][r] |= 0x08; // saves info that a rook is on that square.
         }
     }
     
-    void GameEngine :: place_royals (bool c) {
-        uint8_t row = c ? 7 : 0; // white on R7, black on R0.
-        Queen* queen = new Queen (c, {3, row});
-        board[3][row] |= 0x10; // saves info that a queen is on that square.
-        King* king = new King (c, {4, row});
-        board[4][row] |= 0x20; // saves info that a king is on that square.
+    void GameEngine :: place_royals (const bool& c, const uint8_t& r) {
+        Queen* queen = new Queen (c, {3, r}, game_status);
+        game_pieces.push_back(queen);
+        board[3][r] |= 0x10; // saves info that a queen is on that square.
+        King* king = new King (c, {4, r}, game_status);
+        game_pieces.push_back(king);
+        board[4][r] |= 0x20; // saves info that a king is on that square.
     }
     
     void GameEngine :: print_board (void) {
@@ -175,6 +215,23 @@ namespace chess {
             }
             std::cout << std::endl;
         }
+    }
+    
+    /****************************************************/
+    
+    Piece :: Piece (bool piece_colour, pos coordinates, uint8_t& status_bits) {
+        is_white = piece_colour;
+        is_taken = false;
+        position = coordinates;
+        pgs = &status_bits; // copy the address of status_bits to a pointer.
+    }
+    
+    Piece :: ~Piece (void) {
+        
+    }
+    
+    void Pawn :: check_moves (void) {
+        
     }
 }
 
