@@ -1,209 +1,181 @@
-/* Define Classes and Structs */
+#ifndef CHESS_H
+#define CHESS_H
+
+#include <iostream>
+
 namespace chess {
     
-    struct position {
-        char x;
-        char y;
+    struct pos {
+        uint8_t x;
+        uint8_t y;
     };
     
-    // Define a game piece
+    /* Class for the Game Engine. Stores the game information. */
+    class GameEngine {
+    public:
+        GameEngine (bool player_colour); // constructor
+        ~GameEngine (void); // destructor
+        void place_pawns (bool c);
+        void place_knights (bool c);
+        void place_bishops (bool c);
+        void place_rooks (bool c);
+        void place_royals (bool c);
+        void print_board (void); // prints the current board
+    private:
+        bool is_white; // stores if the player White (1) or Black (0).
+        uint8_t board[8][8]; // 8 bit-flags per square.
+        bool turn; // saves the colour of the piece currently moving
+    };
+    /***********************************************************/
+    
+    /* Classes for the Game Pieces. Created by the Engine directly. */
     class Piece {
     public:
-        bool taken;
-        position pos;
-        std::string piece_type;
-        Piece (bool taken, position pos, std::string piece_type) : taken(taken), pos(pos), piece_type(piece_type) {};
+        Piece (bool player_colour, pos coordinates); // constructor
+        ~Piece (); // destructor
     protected:
+        bool is_white; // stores if the piece is White (1) or Black (0).
+        pos position; // the x-y posistion of the piece.
     private:
     };
     
-    /* To integrate later, not sure how to use this properly yet */
-    class King : public Piece {
-    public:
-    protected:
-        bool checked;
-        bool can_castle_qs;
-        bool can_castle_ks;
-    private:
-    };
+    Piece :: Piece (bool piece_colour, pos coordinates) {
+        is_white = piece_colour;
+        position = coordinates;
+    }
     
-    class Queen : public Piece {
+    class Pawn : public Piece {
     public:
-    protected:
-    private:
-    };
-    
-    class Rook : public Piece {
-    public:
-    protected:
-        bool can_castle;
-    private:
-    };
-    
-    class Bishop : public Piece {
-    public:
+        using Piece :: Piece;
     protected:
     private:
     };
     
     class Knight : public Piece {
     public:
+        using Piece :: Piece;
     protected:
     private:
     };
     
-    class Pawn : public Piece {
+    class Bishop : public Piece {
     public:
+        using Piece :: Piece;
     protected:
-        bool first_move;
-        bool can_promote;
     private:
     };
-    /*************************************************************/
     
-    // The game players
-    class Player {
+    class Rook : public Piece {
     public:
-        std::vector<const Piece*> pieces;
-        void is_white (bool wb) { white = wb; };
-        bool check_colour () { return white; };
-        std::string colour () { return white ? "White" : "Black"; };
-        void add_piece (const Piece* cp) { pieces.push_back(cp); };
-        void print_pieces (void) {
-            for (auto& cp : pieces) {
-                std::cout << colour() << " " << cp->piece_type << " at position " << cp->pos.x << cp->pos.y << "." << std::endl;
+        using Piece :: Piece;
+    protected:
+    private:
+    };
+    
+    class Queen : public Piece {
+    public:
+        using Piece :: Piece;
+    protected:
+    private:
+    };
+    
+    class King : public Piece {
+    public:
+        using Piece :: Piece;
+    protected:
+    private:
+    };
+    /****************************************************************/
+    
+    GameEngine :: GameEngine (bool player_colour) {
+        is_white = player_colour;
+        turn = true;
+        /* Set up the game board */
+        for (uint8_t i = 0; i < 8; ++i) {
+            for (uint8_t j = 0; j < 8; ++j) {
+                board[i][j] = 0;
+            }
+        }
+        bool colour = true;
+        do {
+            place_pawns (colour);
+            place_knights (colour);
+            place_bishops (colour);
+            place_rooks (colour);
+            place_royals (colour);
+            colour = !colour;
+        } while (!colour);
+        print_board ();
+    }
+    
+    GameEngine :: ~GameEngine (void) {
+        
+    }
+    
+    void GameEngine :: place_pawns (bool c) {
+        uint8_t row = c ? 6 : 1; // white on R6, black on R1.
+        for (uint8_t i = 0; i < 8; ++i) {
+            Pawn* pawn = new Pawn (c, {i, row});
+            board[i][row] |= 0x01; // saves info that a pawn is on that square.
+        }
+    }
+    
+    void GameEngine :: place_knights (bool c) {
+        uint8_t row = c ? 7 : 0; // white on R7, black on R0.
+        for (uint8_t i = 1; i < 8; i += 5) {
+            Knight* knight = new Knight (c, {i, row});
+            board[i][row] |= 0x02; // saves info that a knight is on that square.
+        }
+    }
+    
+    void GameEngine :: place_bishops (bool c) {
+        uint8_t row = c ? 7 : 0; // white on R7, black on R0.
+        for (uint8_t i = 2; i < 8; i += 3) {
+            Bishop* bishop = new Bishop (c, {i, row});
+            board[i][row] |= 0x04; // saves info that a bishop is on that square.
+        }
+    }
+    
+    void GameEngine :: place_rooks (bool c) {
+        uint8_t row = c ? 7 : 0; // white on R7, black on R0.
+        for (uint8_t i = 0; i < 8; i+=7) {
+            Rook* rook = new Rook (c, {i, row});
+            board[i][row] |= 0x08; // saves info that a rook is on that square.
+        }
+    }
+    
+    void GameEngine :: place_royals (bool c) {
+        uint8_t row = c ? 7 : 0; // white on R7, black on R0.
+        Queen* queen = new Queen (c, {3, row});
+        board[3][row] |= 0x10; // saves info that a queen is on that square.
+        King* king = new King (c, {4, row});
+        board[4][row] |= 0x20; // saves info that a king is on that square.
+    }
+    
+    void GameEngine :: print_board (void) {
+        uint8_t sq;
+        for (uint8_t j = 0; j < 8; ++j) {
+            for (uint8_t i = 0; i < 8; ++i) {
+                sq = board[i][j];
+                if (sq == 0x01) { // pawn
+                    std::cout << "[p]";
+                } else if (sq == 0x02) { // knight
+                    std::cout << "[N]";
+                } else if (sq == 0x04) { // bishop
+                    std::cout << "[B]";
+                } else if (sq == 0x08) { // rook
+                    std::cout << "[R]";
+                } else if (sq == 0x10) { // queen
+                    std::cout << "[Q]";
+                } else if (sq == 0x20) { // king
+                    std::cout << "[K]";
+                } else { // empty
+                    std::cout << "[ ]";
+                }
             }
             std::cout << std::endl;
         }
-    protected:
-        bool white;
-    private:
-    };
-    
-    // Player 1, extends class Player
-    class Player_One : public Player {
-    public:
-    protected:
-    private:
-    };
-    
-    // Player 2, extends class Player
-    class Player_Two : public Player {
-    public:
-        // Check if the player is a computer
-        void is_computer (bool hc) { computer = hc; };
-    protected:
-        bool computer;
-    private:
-    };
-    
-    // The game itself
-    class Game {
-    public:
-        void setup (Player_One& p1, Player_Two& p2) {
-            // Add the Pawns to the Board
-            for (char it = 'A'; it <= 'H'; ++it) {
-                Piece* wp = new Piece (false, {it, '2'}, "Pawn");
-                Piece* bp = new Piece (false, {it, '7'}, "Pawn");
-                if (p1.check_colour()) {
-                    p1.add_piece (wp); // Add White Piece to p1
-                    p2.add_piece (bp); // Add Black Piece to p2
-                } else {
-                    p1.add_piece (bp); // Add Black Piece to p1
-                    p2.add_piece (wp); // Add White Piece to p2
-                }
-            }
-            // Add the Rooks, Knights and Bishops the Board
-            char its[2] = {'A', 'H'};
-            std::string rkb[3] = {"Rook", "Knight", "Bishop"};
-            for (auto& s : rkb) {
-                for (auto& it : its) {
-                    Piece* wp = new Piece (false, {it, '1'}, s);
-                    Piece* bp = new Piece (false, {it, '8'}, s);
-                    if (p1.check_colour()) {
-                        p1.add_piece (wp); // Add White Piece to p1
-                        p2.add_piece (bp); // Add Black Piece to p2
-                    } else {
-                        p1.add_piece (bp); // Add Black Piece to p1
-                        p2.add_piece (wp); // Add White Piece to p2
-                    }
-                }
-                its[0]++;
-                its[1]--;
-            }
-            // Add the Queen and the King to the Board
-            std::string qk[2] = {"Queen", "King"};
-            for (auto& s : qk) {
-                Piece* wp = new Piece (false, {its[0], '1'}, s);
-                Piece* bp = new Piece (false, {its[0], '8'}, s);
-                if (p1.check_colour()) {
-                    p1.add_piece (wp); // Add White Piece to p1
-                    p2.add_piece (bp); // Add Black Piece to p2
-                } else {
-                    p1.add_piece (bp); // Add Black Piece to p1
-                    p2.add_piece (wp); // Add White Piece to p2
-                }
-                its[0]++;
-            }
-        }
-    protected:
-    private:
-    };
-    
-    // A Board Cell
-    class Square {
-    public:
-        position coordinates () { return cell_num; };
-        char colour () { return white ? 'W' : 'B'; };
-        Square (position cell_num, bool occupied, bool white) : cell_num (cell_num), occupied (occupied), white (white) {};
-        void is_occupied (const Player_One& p1, const Player_Two& p2) {
-            for (auto& cp : p1.pieces) {
-                if (cp->pos.x == cell_num.x && cp->pos.y == cell_num.y) {
-                    occupied = true;
-                    return;
-                }
-            }
-            for (auto& cp : p2.pieces) {
-                if (cp->pos.x == cell_num.x && cp->pos.y == cell_num.y) {
-                    occupied = true;
-                    return;
-                }
-            }
-            occupied = false;
-        }
-    protected:
-        bool occupied;
-        position cell_num;
-    private:
-        bool white;
-    };
-    
-    // The Chess Board
-    class Board {
-    public:
-        std::vector<Square*> board;
-        void board_init (void) {
-            bool is_sq_white = true;
-            for (char it1 = '8'; it1 >= '1'; --it1) {
-                for (char it2 = 'A'; it2 <= 'H'; ++it2) {
-                    Square* sq = new Square ({it2,it1}, (it1 <= '2' || it1 >= '7'), is_sq_white);
-                    board.push_back(sq);
-                    is_sq_white = !is_sq_white;
-                }
-                is_sq_white = !is_sq_white;
-            }
-        }
-        void print_board (void) {
-            std::cout << std::endl;
-            for (auto& sq : board) {
-                position p = sq->coordinates();
-                std::cout << p.x << p.y << '{' << sq->colour() << '}';
-                p.x == 'H' ? std::cout << std::endl : std::cout << ' ';
-            }
-            std::cout << std::endl;
-        }
-    protected:
-    private:
-    };
-};
+    }
+}
 
+#endif

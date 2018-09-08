@@ -1,87 +1,66 @@
-/******************************************/
-/* "chess.cpp", and its relevant header   */
-/* file, "chess.h", were created by the   */
-/* author, Sach Patel. They were written  */
-/* using C++11 rules and conventions.     */
-/******************************************/
-
-/***** TO CREATE THE EXECUTABLE FILE: *****/
-/* "g++ -std=c++11 chess.cpp -o chess"    */
-/******************************************/
-
-/* Includes */
 #include <iostream>
 #include <string>
-#include <vector>
 
-/* Define Macros */
+#include "chess.h"
 
-
-
-
-/* Header Files */
-#include "chess.h" // chess namespace with structs and classes here
-
-
-
-/* Define Prototypes */
-
-
-
-
-/* Main Function */
 int main (void) {
     
-    // Add the Players
-    chess::Player_One p1;
-    chess::Player_Two p2;
-    
-    bool p2_is_comp;
-    bool p1_is_white;
-    
-    char state;
-    // Ask the user if they want to play a computer or a friend
+    std::cout << "Would you like to be White or Black?" << std::endl;
+    std::string a;
+    // note: while a is of type 'std::string', a[k] is of type 'const char *' for k in [0, a.length() - 1].
     do {
-        std::cout << "Would you like to play against a Human or the Computer? (h/c)" << std::endl;
-        std::cin >> state;
-        if (state == 'h') { p2_is_comp = false; } else
-        if (state == 'c') { p2_is_comp = true;  } else
-        { std::cout << "Sorry, I didn't understand." << std::endl; }
-    } while (state != 'h' && state != 'c');
-    // Ask the user which colour Player 1 should be
-    do {
-        std::cout << "Is Player 1 playing as White or Black? (w/b)" << std::endl;
-        std::cin >> state;
-        if (state == 'w') { p1_is_white = true;  } else
-        if (state == 'b') { p1_is_white = false; } else
-        { std::cout << "Sorry, I didn't understand." << std::endl; }
-    } while (state != 'w' && state != 'b');
+        std::cin >> a;
+        if (!std::cin) {
+            /* If the input was invalid: */
+            std::cout << "Something went wrong. Please try again." << std::endl;
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            a = "";
+        } else if (a == "White" or a == "white" or a == "w" or a == "W") {
+            /* If White was chosen: */
+            a = "W";
+        } else if (a == "Black" or a == "black" or a == "b" or a == "B") {
+            /* If Black was chosen: */
+            a = "B";
+        } else if (a[0] == 'B' or a[0] == 'b') { // use type 'char' for comparison
+            /* If there was a spelling error but starts with 'B' or 'b': */
+            std::cout << "Did you mean 'Black'? (y/n)" << std::endl;
+            std::cin >> a;
+            if (a == "y" or a == "yes" or a == "Y" or a == "Yes") {
+                a = "B";
+            } else if (a == "n" or a == "no" or a == "N" or a == "No") {
+                a = "W";
+            } else {
+                std::cout << "Sorry, I didn't understand." << std::endl;
+                a = "";
+            }
+        } else if (a[0] == 'W' or a[0] == 'w') { // use type 'char' for comparison
+            /* If there was a spelling error but starts with 'W' or 'w': */
+            std::cout << "Did you mean 'White'? (y/n)" << std::endl;
+            std::cin >> a;
+            if (a == "y" or a == "yes" or a == "Y" or a == "Yes") {
+                a = "W";
+            } else if (a == "n" or a == "no" or a == "N" or a == "No") {
+                a = "B";
+            } else {
+                std::cout << "Sorry, I didn't understand." << std::endl;
+                a = "";
+            }
+        } else {
+            /* If neither White nor Black was selected. */
+            std::cout << "That's not a valid answer. Please try again." << std::endl;
+            a = "";
+        }
+    } while (a != "W" and a != "B");
     
-    // Set the user parameters in the respective classes.
-    p2.is_computer (p2_is_comp);
-    p1.is_white (  p1_is_white);
-    p2.is_white ( !p1_is_white);
+    bool is_white = (a == "W") ? true : false;
+    std::cout << "You have chosen to be: " << (is_white ? "White" : "Black") << "!" << std::endl;
     
-    // Define and build the gameboard.
-    chess::Board cb;
-    cb.board_init();
+    // Allocate memory for the game, and execute its constructor.
+    chess::GameEngine* game = new chess::GameEngine (is_white);
     
-    // Debug only: Print the vector of board elements to the console.
-    std::cout << "Game Board:" << std::endl;
-    cb.print_board();
-    
-    // Define and set up the game engine.
-    chess::Game g;
-    g.setup(p1, p2);
-    
-    // Debug only : Print the vector of pieces to the console.
-    std::cout << "Player 1:" << std::endl;
-    p1.print_pieces();
-    std::cout << "Player 2:" << std::endl;
-    p2.print_pieces();
-    
+    // Deallocate the memory created for 'game'.
+    delete game;
     return 0;
 }
-
-/* External Functions */
 
