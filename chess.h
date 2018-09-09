@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <vector>
+#include <string>
 
 namespace chess {
     
@@ -17,13 +18,14 @@ namespace chess {
         Piece (bool player_colour, pos coordinates, uint8_t& status_bits, uint8_t**& gb); // constructor
         ~Piece (); // destructor
         uint8_t check_gs () { return *pgs; }
-        uint8_t check_square (pos p) { return *pgb[p.x][p.y]; }
         pos check_position () { return position; }
+        void print_info ();
         virtual void check_moves () = 0; // polymorphic function, not applicable to base class.
+        virtual std::string get_type() = 0;
     protected:
         bool is_white; // stores if the piece is White (1) or Black (0).
         bool is_taken;
-        pos position; // the x-y posistion of the piece.
+        pos position; // the x-y position of the piece.
         std::vector<pos> valid_moves;
         uint8_t* pgs; // *pgs = game_status, pgs = &game_status.
         uint8_t*** pgb; // *pbg = board, pbg = &board.
@@ -36,6 +38,7 @@ namespace chess {
         using Piece :: Piece;
         void check_moves ();
         void is_first_move (bool x) { first_move = x; }
+        std::string get_type() { return "Pawn"; }
     protected:
     private:
         bool first_move;
@@ -48,6 +51,7 @@ namespace chess {
     public:
         using Piece :: Piece;
         void check_moves ();
+        std::string get_type() { return "Knight"; }
     protected:
     private:
         void move ();
@@ -57,6 +61,7 @@ namespace chess {
     public:
         using Piece :: Piece;
         void check_moves ();
+        std::string get_type() { return "Bishop"; }
     protected:
     private:
         void move ();
@@ -66,6 +71,7 @@ namespace chess {
     public:
         using Piece :: Piece;
         void check_moves ();
+        std::string get_type() { return "Rook"; }
     protected:
     private:
         void move ();
@@ -77,6 +83,7 @@ namespace chess {
     public:
         using Piece :: Piece;
         void check_moves ();
+        std::string get_type() { return "Queen"; }
     protected:
     private:
         void move ();
@@ -86,6 +93,7 @@ namespace chess {
     public:
         using Piece :: Piece;
         void check_moves ();
+        std::string get_type() { return "King"; }
     protected:
     private:
         void move ();
@@ -162,9 +170,11 @@ namespace chess {
         
         for (const auto& wp : white_pieces) {
             wp->check_moves ();
+            wp->print_info ();
         }
         for (const auto& bp : black_pieces) {
             bp->check_moves ();
+            bp->print_info ();
         }
         
         print_board ();
@@ -265,40 +275,37 @@ namespace chess {
         
     }
     
+    void Piece :: print_info (void) {
+        std::cout << (is_white ? "White " : "Black ") << this->get_type() << " at " << static_cast<char>(position.x + 'A') << static_cast<int>(position.y + 1) << std::endl;
+    }
+    
+    
     void Pawn :: check_moves (void) {
-        std::cout << (is_white ? "White" : "Black") << " Pawn at " << static_cast<char>(position.x + 'A') << static_cast<int>(position.y + 1) << std::endl;
-        
         uint8_t posx = position.x;
         uint8_t posy = position.y;
-        std::cout << static_cast<int>(posx) << " " << static_cast<int>(posy) << std::endl;
+        uint8_t** b = *pgb; // put the game board array in the current scope
         // check if the piece can move forwards (i.e. not blocked). we will work on check conditions later.
-        uint8_t sq = check_square({posx, static_cast<uint8_t>(posy)});
-        std::cout << static_cast<int>(sq) << std::endl;
-        
+        is_white ? ++posy : --posy;
+        if (b[posx][posy] )
     }
     
     void Knight :: check_moves (void) {
-        std::cout << (is_white ? "White" : "Black") << " Knight at " << static_cast<char>(position.x + 'A') << static_cast<int>(position.y + 1) << std::endl;
         
     }
     
     void Bishop :: check_moves (void) {
-        std::cout << (is_white ? "White" : "Black") << " Bishop at " << static_cast<char>(position.x + 'A') << static_cast<int>(position.y + 1) << std::endl;
         
     }
     
     void Rook :: check_moves (void) {
-        std::cout << (is_white ? "White" : "Black") << " Rook at " << static_cast<char>(position.x + 'A') << static_cast<int>(position.y + 1) << std::endl;
         
     }
     
     void Queen :: check_moves (void) {
-        std::cout << (is_white ? "White" : "Black") << " Queen at " << static_cast<char>(position.x + 'A') << static_cast<int>(position.y + 1) << std::endl;
         
     }
     
     void King :: check_moves (void) {
-        std::cout << (is_white ? "White" : "Black") << " King at " << static_cast<char>(position.x + 'A') << static_cast<int>(position.y + 1) << std::endl;
         
     }
     
