@@ -8,14 +8,14 @@
 namespace chess {
     
     struct pos {
-        uint8_t x;
-        uint8_t y;
+        int8_t x;
+        int8_t y;
     };
     
     /* Classes for the Game Pieces. Created by the Engine directly. */
     class Piece {
     public:
-        Piece (bool player_colour, pos coordinates, uint8_t& status_bits, uint8_t**& gb); // constructor
+        Piece (const bool player_colour, const pos coordinates, uint8_t& status_bits, uint8_t**& gb); // constructor
         ~Piece (); // destructor
         uint8_t check_gs () { return *pgs; }
         pos check_position () { return position; }
@@ -43,7 +43,6 @@ namespace chess {
     private:
         bool first_move;
         void move ();
-        void take_diagonally ();
         void promotion ();
     };
     
@@ -105,7 +104,7 @@ namespace chess {
     /* Class for the Game Engine. Stores the game information. */
     class GameEngine {
     public:
-        GameEngine (bool player_colour); // constructor
+        GameEngine (const bool player_colour); // constructor
         ~GameEngine (void); // destructor
         void print_board (void); // prints the current board
     protected:
@@ -136,27 +135,27 @@ namespace chess {
         std::vector<Piece*> white_pieces; // stores the white game pieces in a vector.
         std::vector<Piece*> black_pieces; // stores the black game pieces in a vector.
         /* Functions that create and place the pieces upon class construction */
-        void place_pawns (const bool c, const uint8_t r);
-        void place_knights (const bool c, const uint8_t r);
-        void place_bishops (const bool c, const uint8_t r);
-        void place_rooks (const bool c, const uint8_t r);
-        void place_royals (const bool c, const uint8_t r);
+        void place_pawns (const bool c, const int8_t r);
+        void place_knights (const bool c, const int8_t r);
+        void place_bishops (const bool c, const int8_t r);
+        void place_rooks (const bool c, const int8_t r);
+        void place_royals (const bool c, const int8_t r);
     };
     /***********************************************************/
     
-    GameEngine :: GameEngine (bool player_colour) {
+    GameEngine :: GameEngine (const bool player_colour) {
         is_white = player_colour;
         game_status = 0x01; // normal, white to move first.
         /* Set up the game board */
         board = new uint8_t*[8];
-        for (uint8_t i = 0; i < 8; ++i) {
+        for (int8_t i = 0; i < 8; ++i) {
             board[i] = new uint8_t[8];
-            for (uint8_t j = 0; j < 8; ++j) {
+            for (int8_t j = 0; j < 8; ++j) {
                 board[i][j] = 0;
             }
         }
         bool colour = true;
-        uint8_t row = 1;
+        int8_t row = 1;
         do {
             place_pawns (colour, row);
             colour ? --row : ++row;
@@ -187,8 +186,8 @@ namespace chess {
         delete board;
     }
     
-    void GameEngine :: place_pawns (const bool c, const uint8_t r) {
-        for (uint8_t i = 0; i < 8; ++i) {
+    void GameEngine :: place_pawns (const bool c, const int8_t r) {
+        for (int8_t i = 0; i < 8; ++i) {
             Pawn* pawn = new Pawn (c, {i, r}, game_status, board);
             pawn->is_first_move(true);
             c ? white_pieces.push_back(pawn) : black_pieces.push_back(pawn);
@@ -196,31 +195,31 @@ namespace chess {
         }
     }
     
-    void GameEngine :: place_knights (const bool c, const uint8_t r) {
-        for (uint8_t i = 1; i < 8; i += 5) {
+    void GameEngine :: place_knights (const bool c, const int8_t r) {
+        for (int8_t i = 1; i < 8; i += 5) {
             Knight* knight = new Knight (c, {i, r}, game_status, board);
             c ? white_pieces.push_back(knight) : black_pieces.push_back(knight);
             board[i][r] |= c ? 0x42 : 0x82; // saves info that a pawn is on that square.
         }
     }
     
-    void GameEngine :: place_bishops (const bool c, const uint8_t r) {
-        for (uint8_t i = 2; i < 8; i += 3) {
+    void GameEngine :: place_bishops (const bool c, const int8_t r) {
+        for (int8_t i = 2; i < 8; i += 3) {
             Bishop* bishop = new Bishop (c, {i, r}, game_status, board);
             c ? white_pieces.push_back(bishop) : black_pieces.push_back(bishop);
             board[i][r] |= c ? 0x44 : 0x84; // saves info that a pawn is on that square.
         }
     }
     
-    void GameEngine :: place_rooks (const bool c, const uint8_t r) {
-        for (uint8_t i = 0; i < 8; i+=7) {
+    void GameEngine :: place_rooks (const bool c, const int8_t r) {
+        for (int8_t i = 0; i < 8; i+=7) {
             Rook* rook = new Rook (c, {i, r}, game_status, board);
             c ? white_pieces.push_back(rook) : black_pieces.push_back(rook);
             board[i][r] |= c ? 0x48 : 0x88; // saves info that a pawn is on that square.
         }
     }
     
-    void GameEngine :: place_royals (const bool c, const uint8_t r) {
+    void GameEngine :: place_royals (const bool c, const int8_t r) {
         Queen* queen = new Queen (c, {3, r}, game_status, board);
         c ? white_pieces.push_back(queen) : black_pieces.push_back(queen);
         board[3][r] |= c ? 0x50 : 0x90; // saves info that a pawn is on that square.
@@ -263,7 +262,7 @@ namespace chess {
     
     /****************************************************/
     
-    Piece :: Piece (bool piece_colour, pos coordinates, uint8_t& status_bits, uint8_t**& gb) {
+    Piece :: Piece (const bool piece_colour, const pos coordinates, uint8_t& status_bits, uint8_t**& gb) {
         is_white = piece_colour;
         is_taken = false;
         position = coordinates;
@@ -281,12 +280,36 @@ namespace chess {
     
     
     void Pawn :: check_moves (void) {
-        uint8_t posx = position.x;
-        uint8_t posy = position.y;
+        int8_t posx = position.x;
+        int8_t posy = position.y;
         uint8_t** b = *pgb; // put the game board array in the current scope
-        // check if the piece can move forwards (i.e. not blocked). we will work on check conditions later.
+        // check if the piece can move forwards (i.e. not blocked). we will work on 'check' case conditions and en-passant rules later.
         is_white ? ++posy : --posy;
-        if (b[posx][posy] )
+        if (b[posx][posy] == 0) {
+            valid_moves.push_back({posx, posy});
+        }
+        if (posx < 7) {
+            if ((b[posx + 1][posy] & 0x80) > 0) {
+                valid_moves.push_back({(++posx)--, posy});
+            }
+        }
+        if (posx > 0) {
+            if ((b[posx - 1][posy] & 0x80) > 0) {
+                valid_moves.push_back({(--posx)++, posy});
+            }
+        }
+        
+        if (first_move) {
+            is_white ? ++posy : --posy;
+            if (b[posx][posy] == 0) {
+                valid_moves.push_back({posx, posy});
+            }
+        }
+        
+        
+        for (const auto& move : valid_moves) {
+            std::cout << static_cast<int>(move.x) << " " << static_cast<int>(move.y) << std::endl;
+        }
     }
     
     void Knight :: check_moves (void) {
