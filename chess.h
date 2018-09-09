@@ -29,7 +29,7 @@ namespace chess {
         std::vector<pos> valid_moves;
         uint8_t* pgs; // *pgs = game_status, pgs = &game_status.
         uint8_t*** pgb; // *pbg = board, pbg = &board.
-        virtual void move (); // polymorphic, default for N, B, R, Q.
+        virtual void move (pos p); // polymorphic, default for N, B, R, Q.
     private:
     };
     
@@ -42,7 +42,7 @@ namespace chess {
     protected:
     private:
         bool first_move;
-        void move ();
+        void move (pos p);
         void promotion ();
     };
     
@@ -89,7 +89,7 @@ namespace chess {
         std::string get_type() { return "King"; }
     protected:
     private:
-        void move ();
+        void move (pos p);
     };
     /****************************************************************/
     
@@ -644,32 +644,29 @@ namespace chess {
         }
     }
     
-    void Piece :: move (void) {
+    void Piece :: move (pos p) {
         // the default function for moving. Exceptions only for p and K.
+        uint8_t** b = *pgb;
+        bool valid = false;
+        for (const auto& m : valid_moves) {
+            if (m.x == p.x and m.y == p.y) {
+                valid = true;
+            }
+        }
+        if (valid) {
+            uint8_t temp = b[position.x][position.y];
+            b[position.x][position.y] = 0;
+            position = p;
+            b[position.x][position.y] = temp;
+        }
     }
     
-    void Pawn :: move (void) {
+    void Pawn :: move (pos p) {
         // if first move occurs, it must be set to false.
         first_move = false;
     }
-//
-//    void Knight :: move (void) {
-//
-//    }
-//
-//    void Bishop :: move (void) {
-//
-//    }
-//
-//    void Rook :: move (void) {
-//
-//    }
-//
-//    void Queen :: move (void) {
-//
-//    }
-//
-    void King :: move (void) {
+
+    void King :: move (pos p) {
         // an exception case is made for the castling move.
     }
 }
