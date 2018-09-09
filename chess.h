@@ -278,7 +278,6 @@ namespace chess {
         std::cout << (is_white ? "White " : "Black ") << this->get_type() << " at " << static_cast<char>(position.x + 'A') << static_cast<int>(position.y + 1) << std::endl;
     }
     
-    
     void Pawn :: check_moves (void) {
         int8_t posx = position.x;
         int8_t posy = position.y;
@@ -298,17 +297,14 @@ namespace chess {
                 valid_moves.push_back({(--posx)++, posy});
             }
         }
-        
         if (first_move) {
             is_white ? ++posy : --posy;
             if (b[posx][posy] == 0) {
                 valid_moves.push_back({posx, posy});
             }
         }
-        
-        
         for (const auto& move : valid_moves) {
-            std::cout << static_cast<int>(move.x) << " " << static_cast<int>(move.y) << std::endl;
+            std::cout << static_cast<char>(move.x + 'A') << " " << static_cast<int>(move.y + 1) << std::endl;
         }
     }
     
