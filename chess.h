@@ -20,8 +20,8 @@ namespace chess {
         uint8_t check_gs () { return *pgs; }
         pos check_position () { return position; }
         void print_info ();
-        virtual void check_moves () = 0; // polymorphic function, not applicable to base class.
-        virtual std::string get_type() = 0;
+        virtual void check_moves () = 0; // pure polymorphic function
+        virtual std::string get_type() = 0; // pure polymorphic function
     protected:
         bool is_white; // stores if the piece is White (1) or Black (0).
         bool is_taken;
@@ -29,7 +29,7 @@ namespace chess {
         std::vector<pos> valid_moves;
         uint8_t* pgs; // *pgs = game_status, pgs = &game_status.
         uint8_t*** pgb; // *pbg = board, pbg = &board.
-        virtual void move () = 0; // polymorphic, not applicable to base class.
+        virtual void move (); // polymorphic, default for N, B, R, Q.
     private:
     };
     
@@ -53,7 +53,6 @@ namespace chess {
         std::string get_type() { return "Knight"; }
     protected:
     private:
-        void move ();
     };
     
     class Bishop : public Piece {
@@ -63,7 +62,6 @@ namespace chess {
         std::string get_type() { return "Bishop"; }
     protected:
     private:
-        void move ();
     };
     
     class Rook : public Piece {
@@ -73,9 +71,6 @@ namespace chess {
         std::string get_type() { return "Rook"; }
     protected:
     private:
-        void move ();
-        void ks_castle ();
-        void qs_castle ();
     };
     
     class Queen : public Piece {
@@ -85,7 +80,6 @@ namespace chess {
         std::string get_type() { return "Queen"; }
     protected:
     private:
-        void move ();
     };
     
     class King : public Piece {
@@ -96,8 +90,6 @@ namespace chess {
     protected:
     private:
         void move ();
-        void ks_castle ();
-        void qs_castle ();
     };
     /****************************************************************/
     
@@ -426,46 +418,259 @@ namespace chess {
             }
         }
         
-        
         for (const auto& move : valid_moves) {
             std::cout << static_cast<char>(move.x + 'A') << static_cast<int>(move.y + 1) << std::endl;
         }
     }
     
     void Rook :: check_moves (void) {
+        int8_t posx = position.x + 1;
+        int8_t posy = position.y;
+        uint8_t** b = *pgb; // put the game board array in the current scope
         
+        uint8_t comp = is_white ? 0x40 : 0x80;
+        
+        // up, down, left, right
+        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
+            if ((b[posx][posy] & 0xC0) == comp) {
+                break;
+            } else if (b[posx][posy] > 0) {
+                valid_moves.push_back({posx, posy});
+                break;
+            } else {
+                valid_moves.push_back({posx++, posy});
+            }
+        }
+        posx = position.x - 1;
+        posy = position.y;
+        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
+            if ((b[posx][posy] & 0xC0) == comp) {
+                break;
+            } else if (b[posx][posy] > 0) {
+                valid_moves.push_back({posx, posy});
+                break;
+            } else {
+                valid_moves.push_back({posx--, posy});
+            }
+        }
+        posx = position.x;
+        posy = position.y + 1;
+        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
+            if ((b[posx][posy] & 0xC0) == comp) {
+                break;
+            } else if (b[posx][posy] > 0) {
+                valid_moves.push_back({posx, posy});
+                break;
+            } else {
+                valid_moves.push_back({posx, posy++});
+            }
+        }
+        posx = position.x;
+        posy = position.y - 1;
+        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
+            if ((b[posx][posy] & 0xC0) == comp) {
+                break;
+            } else if (b[posx][posy] > 0) {
+                valid_moves.push_back({posx, posy});
+                break;
+            } else {
+                valid_moves.push_back({posx, posy--});
+            }
+        }
+        for (const auto& move : valid_moves) {
+            std::cout << static_cast<char>(move.x + 'A') << static_cast<int>(move.y + 1) << std::endl;
+        }
     }
     
     void Queen :: check_moves (void) {
+        int8_t posx = position.x + 1;
+        int8_t posy = position.y + 1;
+        uint8_t** b = *pgb; // put the game board array in the current scope
         
+        uint8_t comp = is_white ? 0x40 : 0x80;
+        
+        // up-left, up-right, down-left, down-right, up, down, left, right
+        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
+            if ((b[posx][posy] & 0xC0) == comp) {
+                break;
+            } else if (b[posx][posy] > 0) {
+                valid_moves.push_back({posx, posy});
+                break;
+            } else {
+                valid_moves.push_back({posx++, posy++});
+            }
+        }
+        posx = position.x + 1;
+        posy = position.y - 1;
+        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
+            if ((b[posx][posy] & 0xC0) == comp) {
+                break;
+            } else if (b[posx][posy] > 0) {
+                valid_moves.push_back({posx, posy});
+                break;
+            } else {
+                valid_moves.push_back({posx++, posy--});
+            }
+        }
+        posx = position.x - 1;
+        posy = position.y + 1;
+        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
+            if ((b[posx][posy] & 0xC0) == comp) {
+                break;
+            } else if (b[posx][posy] > 0) {
+                valid_moves.push_back({posx, posy});
+                break;
+            } else {
+                valid_moves.push_back({posx--, posy++});
+            }
+        }
+        posx = position.x - 1;
+        posy = position.y - 1;
+        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
+            if ((b[posx][posy] & 0xC0) == comp) {
+                break;
+            } else if (b[posx][posy] > 0) {
+                valid_moves.push_back({posx, posy});
+                break;
+            } else {
+                valid_moves.push_back({posx--, posy--});
+            }
+        }
+        posx = position.x + 1;
+        posy = position.y;
+        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
+            if ((b[posx][posy] & 0xC0) == comp) {
+                break;
+            } else if (b[posx][posy] > 0) {
+                valid_moves.push_back({posx, posy});
+                break;
+            } else {
+                valid_moves.push_back({posx++, posy});
+            }
+        }
+        posx = position.x - 1;
+        posy = position.y;
+        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
+            if ((b[posx][posy] & 0xC0) == comp) {
+                break;
+            } else if (b[posx][posy] > 0) {
+                valid_moves.push_back({posx, posy});
+                break;
+            } else {
+                valid_moves.push_back({posx--, posy});
+            }
+        }
+        posx = position.x;
+        posy = position.y + 1;
+        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
+            if ((b[posx][posy] & 0xC0) == comp) {
+                break;
+            } else if (b[posx][posy] > 0) {
+                valid_moves.push_back({posx, posy});
+                break;
+            } else {
+                valid_moves.push_back({posx, posy++});
+            }
+        }
+        posx = position.x;
+        posy = position.y - 1;
+        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
+            if ((b[posx][posy] & 0xC0) == comp) {
+                break;
+            } else if (b[posx][posy] > 0) {
+                valid_moves.push_back({posx, posy});
+                break;
+            } else {
+                valid_moves.push_back({posx, posy--});
+            }
+        }
+        
+        for (const auto& move : valid_moves) {
+            std::cout << static_cast<char>(move.x + 'A') << static_cast<int>(move.y + 1) << std::endl;
+        }
     }
     
     void King :: check_moves (void) {
         
+        int8_t posx = position.x + 1;
+        int8_t posy = position.y + 1;
+        uint8_t** b = *pgb; // put the game board array in the current scope
+        
+        uint8_t comp = is_white ? 0x40 : 0x80;
+        
+        // up-left, up-right, down-left, down-right, up, down, left, right
+        if (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
+            if ((b[posx][posy] & 0xC0) != comp) {
+                valid_moves.push_back({posx--, posy});
+            }
+        }
+        if (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
+            if ((b[posx][posy] & 0xC0) != comp) {
+                valid_moves.push_back({posx--, posy});
+            }
+        }
+        if (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
+            if ((b[posx][posy] & 0xC0) != comp) {
+                valid_moves.push_back({posx, posy--});
+            }
+        }
+        if (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
+            if ((b[posx][posy] & 0xC0) != comp) {
+                valid_moves.push_back({posx, posy--});
+            }
+        }
+        if (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
+            if ((b[posx][posy] & 0xC0) != comp) {
+                valid_moves.push_back({posx++, posy});
+            }
+        }
+        if (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
+            if ((b[posx][posy] & 0xC0) != comp) {
+                valid_moves.push_back({posx++, posy});
+            }
+        }
+        if (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
+            if ((b[posx][posy] & 0xC0) != comp) {
+                valid_moves.push_back({posx, posy++});
+            }
+        }
+        if (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
+            if ((b[posx][posy] & 0xC0) != comp) {
+                valid_moves.push_back({posx, posy});
+            }
+        }
+        for (const auto& move : valid_moves) {
+            std::cout << static_cast<char>(move.x + 'A') << static_cast<int>(move.y + 1) << std::endl;
+        }
+    }
+    
+    void Piece :: move (void) {
+        // the default function for moving. Exceptions only for p and K.
     }
     
     void Pawn :: move (void) {
-        
+        // if first move occurs, it must be set to false.
+        first_move = false;
     }
-    
-    void Knight :: move (void) {
-        
-    }
-    
-    void Bishop :: move (void) {
-        
-    }
-    
-    void Rook :: move (void) {
-        
-    }
-    
-    void Queen :: move (void) {
-        
-    }
-    
+//
+//    void Knight :: move (void) {
+//
+//    }
+//
+//    void Bishop :: move (void) {
+//
+//    }
+//
+//    void Rook :: move (void) {
+//
+//    }
+//
+//    void Queen :: move (void) {
+//
+//    }
+//
     void King :: move (void) {
-        
+        // an exception case is made for the castling move.
     }
 }
 
