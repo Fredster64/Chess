@@ -166,14 +166,13 @@ namespace chess {
             colour = !colour;
             row = 6;
         } while (!colour);
-        
-        for (const auto& wp : white_pieces) {
-            wp->check_moves ();
-            wp->print_info ();
-        }
+        // piece information
         for (const auto& bp : black_pieces) {
-            bp->check_moves ();
             bp->print_info ();
+        }
+        for (const auto& wp : white_pieces) {
+            wp->print_info ();
+            wp->check_moves ();
         }
         
         print_board ();
@@ -282,18 +281,20 @@ namespace chess {
         int8_t posx = position.x;
         int8_t posy = position.y;
         uint8_t** b = *pgb; // put the game board array in the current scope
-        // check if the piece can move forwards (i.e. not blocked). we will work on 'check' case conditions and en-passant rules later.
+        
+        // will work on 'check' case conditions and en-passant rules later.
         is_white ? ++posy : --posy;
-        if (b[posx][posy] == 0) {
+        if (b[posx][posy] == 0 and posy != 0 and posy != 7) {
             valid_moves.push_back({posx, posy});
         }
+        uint8_t comp = is_white ? 0x80 : 0x40;
         if (posx < 7) {
-            if ((b[posx + 1][posy] & 0x80) > 0) {
+            if ((b[posx + 1][posy] & 0xC0) == comp) {
                 valid_moves.push_back({(++posx)--, posy});
             }
         }
         if (posx > 0) {
-            if ((b[posx - 1][posy] & 0x80) > 0) {
+            if ((b[posx - 1][posy] & 0xC0) == comp) {
                 valid_moves.push_back({(--posx)++, posy});
             }
         }
@@ -304,16 +305,131 @@ namespace chess {
             }
         }
         for (const auto& move : valid_moves) {
-            std::cout << static_cast<char>(move.x + 'A') << " " << static_cast<int>(move.y + 1) << std::endl;
+            std::cout << static_cast<char>(move.x + 'A') << static_cast<int>(move.y + 1) << std::endl;
         }
     }
     
     void Knight :: check_moves (void) {
+        const int8_t posx = position.x;
+        const int8_t posy = position.y;
+        uint8_t** b = *pgb; // put the game board array in the current scope
         
+        uint8_t comp = is_white ? 0x40 : 0x80;
+        
+        // L-shapes: -2x-1y ; -2x+1y ; -1x-2y ; -1x+2y ; +1x-2y ; +1x+2y ; +2x-1y ; +2x+1y
+        if (posx > 1) {
+            if (posy > 0) {
+                if ((b[posx - 2][posy - 1] & 0xC0) != comp) {
+                    valid_moves.push_back({static_cast<int8_t>(posx - 2), static_cast<int8_t>(posy - 1)});
+                }
+            }
+            if (posy < 7) {
+                if ((b[posx - 2][posy + 1] & 0xC0) != comp) {
+                    valid_moves.push_back({static_cast<int8_t>(posx - 2), static_cast<int8_t>(posy + 1)});
+                }
+            }
+        }
+        if (posx > 0) {
+            if (posy > 1) {
+                if ((b[posx - 1][posy - 2] & 0xC0) != comp) {
+                    valid_moves.push_back({static_cast<int8_t>(posx - 1), static_cast<int8_t>(posy - 2)});
+                }
+            }
+            if (posy < 6) {
+                if ((b[posx - 1][posy + 2] & 0xC0) != comp) {
+                    valid_moves.push_back({static_cast<int8_t>(posx - 1), static_cast<int8_t>(posy + 2)});
+                }
+            }
+        }
+        if (posx < 6) {
+            if (posy > 0) {
+                if ((b[posx + 2][posy - 1] & 0xC0) != comp) {
+                    valid_moves.push_back({static_cast<int8_t>(posx + 2), static_cast<int8_t>(posy - 1)});
+                }
+            }
+            if (posy < 7) {
+                if ((b[posx + 2][posy + 1] & 0xC0) != comp) {
+                    valid_moves.push_back({static_cast<int8_t>(posx + 2), static_cast<int8_t>(posy + 1)});
+                }
+            }
+        }
+        if (posx < 7) {
+            if (posy > 1) {
+                if ((b[posx + 1][posy - 2] & 0xC0) != comp) {
+                    valid_moves.push_back({static_cast<int8_t>(posx + 1), static_cast<int8_t>(posy - 2)});
+                }
+            }
+            if (posy < 6) {
+                if ((b[posx + 1][posy + 2] & 0xC0) != comp) {
+                    valid_moves.push_back({static_cast<int8_t>(posx + 1), static_cast<int8_t>(posy + 2)});
+                }
+            }
+        }
+        
+        for (const auto& move : valid_moves) {
+            std::cout << static_cast<char>(move.x + 'A') << static_cast<int>(move.y + 1) << std::endl;
+        }
     }
     
     void Bishop :: check_moves (void) {
+        int8_t posx = position.x + 1;
+        int8_t posy = position.y + 1;
+        uint8_t** b = *pgb; // put the game board array in the current scope
         
+        uint8_t comp = is_white ? 0x40 : 0x80;
+        
+        // up-left, up-right, down-left, down-right
+        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
+            if ((b[posx][posy] & 0xC0) == comp) {
+                break;
+            } else if (b[posx][posy] > 0) {
+                valid_moves.push_back({posx, posy});
+                break;
+            } else {
+                valid_moves.push_back({posx++, posy++});
+            }
+        }
+        posx = position.x + 1;
+        posy = position.y - 1;
+        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
+            if ((b[posx][posy] & 0xC0) == comp) {
+                break;
+            } else if (b[posx][posy] > 0) {
+                valid_moves.push_back({posx, posy});
+                break;
+            } else {
+                valid_moves.push_back({posx++, posy--});
+            }
+        }
+        posx = position.x - 1;
+        posy = position.y + 1;
+        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
+            if ((b[posx][posy] & 0xC0) == comp) {
+                break;
+            } else if (b[posx][posy] > 0) {
+                valid_moves.push_back({posx, posy});
+                break;
+            } else {
+                valid_moves.push_back({posx--, posy++});
+            }
+        }
+        posx = position.x - 1;
+        posy = position.y - 1;
+        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
+            if ((b[posx][posy] & 0xC0) == comp) {
+                break;
+            } else if (b[posx][posy] > 0) {
+                valid_moves.push_back({posx, posy});
+                break;
+            } else {
+                valid_moves.push_back({posx--, posy--});
+            }
+        }
+        
+        
+        for (const auto& move : valid_moves) {
+            std::cout << static_cast<char>(move.x + 'A') << static_cast<int>(move.y + 1) << std::endl;
+        }
     }
     
     void Rook :: check_moves (void) {
