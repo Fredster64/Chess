@@ -30,6 +30,7 @@ namespace chess {
         pos position; // the x-y position of the piece.
         uint8_t* pgs; // *pgs = game_status, pgs = &game_status.
         uint8_t*** pgb; // *pbg = board, pbg = &board.
+        void print_pos (const pos p) { std::cout << static_cast<char>(p.x + 'A') << static_cast<int>(p.y + 1) << std::endl; }
     private:
     };
     
@@ -134,7 +135,8 @@ namespace chess {
         void place_royals (const bool c, const int8_t r);
         void move_piece (pos pfrom, pos pto);
         void play_game (void);
-    };
+        void print_pos (const pos p) { std::cout << static_cast<char>(p.x + 'A') << static_cast<int>(p.y + 1) << std::endl; }
+        pos char2int (const char* p) { return {static_cast<int8_t>(p[0] - 'A'), static_cast<int8_t>(p[1] - '1')}; } };
     /***********************************************************/
     
     GameEngine :: GameEngine (const bool player_colour) {
@@ -172,7 +174,6 @@ namespace chess {
         print_board ();
         
         play_game ();
-        
     }
     
     GameEngine :: ~GameEngine (void) {
@@ -186,7 +187,21 @@ namespace chess {
         
         while ((game_status & 0xC0) == 0) {
             
-            move_piece ({3, 1}, {3, 3}); // moves the pawn from D2 to D4.
+//            move_piece ({3, 1}, {3, 3}); // moves the pawn from D2 to D4.
+            
+            char p[2];
+            pos pin, pout;
+            std::cout << "Please enter the coordinates of the piece you are moving." << std::endl;
+            std::cin >> p;
+            pin = char2int(p);
+            print_pos (pin);
+            
+            std::cout << "Please enter where the piece is moving to." << std::endl;
+            std::cin >> p;
+            pout = char2int(p);
+            print_pos(pout);
+            
+            move_piece (pin, pout);
             
             for (const auto& wp : white_pieces) {
                 wp->print_info ();
@@ -195,19 +210,12 @@ namespace chess {
             
             print_board ();
             
-            ((game_status & 0x01) > 0) ? game_status &= 0 : game_status |= 1;
+            ((game_status & 0x01) > 0) ? game_status &= 0xFE : game_status |= 0x01; // toggles status bit 0.
             
             // Debug: break for the while loop.
-            std::cout << static_cast<int>(game_status) << std::endl;
-            int x;
-            std::cin >> x;
-            if (x == 10) break;
+//            std::cout << static_cast<int>(game_status) << std::endl;
         }
     }
-    
-    
-    
-    
     
     void GameEngine :: place_pawns (const bool c, const int8_t r) {
         for (int8_t i = 0; i < 8; ++i) {
@@ -341,7 +349,8 @@ namespace chess {
             }
         }
         for (const auto& move : valid_moves) {
-            std::cout << static_cast<char>(move.x + 'A') << static_cast<int>(move.y + 1) << std::endl;
+//            std::cout << static_cast<char>(move.x + 'A') << static_cast<int>(move.y + 1) << std::endl;
+            print_pos(move);
         }
     }
     
@@ -403,7 +412,7 @@ namespace chess {
         }
         
         for (const auto& move : valid_moves) {
-            std::cout << static_cast<char>(move.x + 'A') << static_cast<int>(move.y + 1) << std::endl;
+            print_pos(move);
         }
     }
     
@@ -463,7 +472,7 @@ namespace chess {
         }
         
         for (const auto& move : valid_moves) {
-            std::cout << static_cast<char>(move.x + 'A') << static_cast<int>(move.y + 1) << std::endl;
+            print_pos(move);
         }
     }
     
@@ -522,7 +531,7 @@ namespace chess {
             }
         }
         for (const auto& move : valid_moves) {
-            std::cout << static_cast<char>(move.x + 'A') << static_cast<int>(move.y + 1) << std::endl;
+            print_pos(move);
         }
     }
     
@@ -630,7 +639,7 @@ namespace chess {
         }
         
         for (const auto& move : valid_moves) {
-            std::cout << static_cast<char>(move.x + 'A') << static_cast<int>(move.y + 1) << std::endl;
+            print_pos(move);
         }
     }
     
@@ -684,7 +693,7 @@ namespace chess {
             }
         }
         for (const auto& move : valid_moves) {
-            std::cout << static_cast<char>(move.x + 'A') << static_cast<int>(move.y + 1) << std::endl;
+            print_pos(move);
         }
     }
     
