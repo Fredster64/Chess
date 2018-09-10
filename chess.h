@@ -17,19 +17,19 @@ namespace chess {
     public:
         Piece (const bool player_colour, const pos coordinates, uint8_t& status_bits, uint8_t**& gb); // constructor
         ~Piece (); // destructor
+        std::vector<pos> valid_moves;
         uint8_t check_gs () { return *pgs; }
         pos check_position () { return position; }
         void print_info ();
         virtual void check_moves () = 0; // pure polymorphic function
         virtual std::string get_type() = 0; // pure polymorphic function
+        virtual void move (pos p); // polymorphic, default for N, B, R, Q.
     protected:
         bool is_white; // stores if the piece is White (1) or Black (0).
         bool is_taken;
         pos position; // the x-y position of the piece.
-        std::vector<pos> valid_moves;
         uint8_t* pgs; // *pgs = game_status, pgs = &game_status.
         uint8_t*** pgb; // *pbg = board, pbg = &board.
-        virtual void move (pos p); // polymorphic, default for N, B, R, Q.
     private:
     };
     
@@ -37,12 +37,12 @@ namespace chess {
     public:
         using Piece :: Piece;
         void check_moves ();
+        void move (pos p);
         void is_first_move (bool x) { first_move = x; }
         std::string get_type() { return "Pawn"; }
     protected:
     private:
         bool first_move;
-        void move (pos p);
         void promotion ();
     };
     
@@ -86,10 +86,10 @@ namespace chess {
     public:
         using Piece :: Piece;
         void check_moves ();
+        void move (pos p);
         std::string get_type() { return "King"; }
     protected:
     private:
-        void move (pos p);
     };
     /****************************************************************/
     
@@ -132,6 +132,8 @@ namespace chess {
         void place_bishops (const bool c, const int8_t r);
         void place_rooks (const bool c, const int8_t r);
         void place_royals (const bool c, const int8_t r);
+        void move_piece (pos pfrom, pos pto);
+        void play_game (void);
     };
     /***********************************************************/
     
@@ -168,6 +170,9 @@ namespace chess {
         }
         
         print_board ();
+        
+        play_game ();
+        
     }
     
     GameEngine :: ~GameEngine (void) {
@@ -176,6 +181,33 @@ namespace chess {
         }
         delete board;
     }
+    
+    void GameEngine :: play_game (void) {
+        
+        while ((game_status & 0xC0) == 0) {
+            
+            move_piece ({3, 1}, {3, 3}); // moves the pawn from D2 to D4.
+            
+            for (const auto& wp : white_pieces) {
+                wp->print_info ();
+                wp->check_moves ();
+            }
+            
+            print_board ();
+            
+            ((game_status & 0x01) > 0) ? game_status &= 0 : game_status |= 1;
+            
+            // Debug: break for the while loop.
+            std::cout << static_cast<int>(game_status) << std::endl;
+            int x;
+            std::cin >> x;
+            if (x == 10) break;
+        }
+    }
+    
+    
+    
+    
     
     void GameEngine :: place_pawns (const bool c, const int8_t r) {
         for (int8_t i = 0; i < 8; ++i) {
@@ -217,6 +249,16 @@ namespace chess {
         King* king = new King (c, {4, r}, game_status, board);
         c ? white_pieces.push_back(king) : black_pieces.push_back(king);
         board[4][r] |= c ? 0x60 : 0xA0; // saves info that a pawn is on that square.
+    }
+    
+    void GameEngine :: move_piece (pos pfrom, pos pto) {
+        for (const auto& piece : ((game_status & 0x1) > 0 ? white_pieces : black_pieces)) {
+            pos temp = piece->check_position();
+            if ((pfrom.x == temp.x) and (pfrom.y == temp.y)) {
+                piece->move(pto);
+            }
+            piece->valid_moves.clear();
+        }
     }
     
     void GameEngine :: print_board (void) {
@@ -291,9 +333,11 @@ namespace chess {
             }
         }
         if (first_move) {
-            is_white ? ++posy : --posy;
             if (b[posx][posy] == 0) {
-                valid_moves.push_back({posx, posy});
+                is_white ? ++posy : --posy;
+                if (b[posx][posy] == 0) {
+                    valid_moves.push_back({posx, posy});
+                }
             }
         }
         for (const auto& move : valid_moves) {
@@ -646,6 +690,7 @@ namespace chess {
     
     void Piece :: move (pos p) {
         // the default function for moving. Exceptions only for p and K.
+        // a failure case needs to be added.
         uint8_t** b = *pgb;
         bool valid = false;
         for (const auto& m : valid_moves) {
@@ -663,11 +708,37 @@ namespace chess {
     
     void Pawn :: move (pos p) {
         // if first move occurs, it must be set to false.
-        first_move = false;
+        uint8_t** b = *pgb;
+        bool valid = false;
+        for (const auto& m : valid_moves) {
+            if (m.x == p.x and m.y == p.y) {
+                valid = true;
+            }
+        }
+        if (valid) {
+            first_move = false;
+            uint8_t temp = b[position.x][position.y];
+            b[position.x][position.y] = 0;
+            position = p;
+            b[position.x][position.y] = temp;
+        }
     }
 
     void King :: move (pos p) {
-        // an exception case is made for the castling move.
+        // an exception case is made for the castling move (not yet implemented).
+        uint8_t** b = *pgb;
+        bool valid = false;
+        for (const auto& m : valid_moves) {
+            if (m.x == p.x and m.y == p.y) {
+                valid = true;
+            }
+        }
+        if (valid) {
+            uint8_t temp = b[position.x][position.y];
+            b[position.x][position.y] = 0;
+            position = p;
+            b[position.x][position.y] = temp;
+        }
     }
 }
 
