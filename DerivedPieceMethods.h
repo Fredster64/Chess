@@ -34,10 +34,6 @@ namespace chess {
                 }
             }
         }
-        for (const auto& move : valid_moves) {
-//            std::cout << static_cast<char>(move.x + 'A') << static_cast<int>(move.y + 1) << std::endl;
-            print_pos(move);
-        }
     }
     
     void Knight :: check_moves (void) {
@@ -96,10 +92,6 @@ namespace chess {
                 }
             }
         }
-        
-        for (const auto& move : valid_moves) {
-            print_pos(move);
-        }
     }
     
     void Bishop :: check_moves (void) {
@@ -156,10 +148,6 @@ namespace chess {
                 valid_moves.push_back({posx--, posy--});
             }
         }
-        
-        for (const auto& move : valid_moves) {
-            print_pos(move);
-        }
     }
     
     void Rook :: check_moves (void) {
@@ -215,9 +203,6 @@ namespace chess {
             } else {
                 valid_moves.push_back({posx, posy--});
             }
-        }
-        for (const auto& move : valid_moves) {
-            print_pos(move);
         }
     }
     
@@ -323,10 +308,6 @@ namespace chess {
                 valid_moves.push_back({posx, posy--});
             }
         }
-        
-        for (const auto& move : valid_moves) {
-            print_pos(move);
-        }
     }
     
     void King :: check_moves (void) {
@@ -378,12 +359,9 @@ namespace chess {
                 valid_moves.push_back({posx, posy});
             }
         }
-        for (const auto& move : valid_moves) {
-            print_pos(move);
-        }
     }
     
-    void Pawn :: move (pos p) {
+    bool Pawn :: move (pos p) {
         // if first move occurs, it must be set to false.
         uint8_t** b = *pgb;
         bool valid = false;
@@ -399,9 +377,10 @@ namespace chess {
             position = p;
             b[position.x][position.y] = temp;
         }
+        return valid;
     }
 
-    void King :: move (pos p) {
+    bool King :: move (pos p) {
         // an exception case is made for the castling move (not yet implemented).
         uint8_t** b = *pgb;
         bool valid = false;
@@ -416,6 +395,7 @@ namespace chess {
             position = p;
             b[position.x][position.y] = temp;
         }
+        return valid;
     }
 }
 

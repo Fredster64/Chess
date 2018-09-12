@@ -5,6 +5,8 @@
 #include <vector>
 #include <string>
 
+void rm_dlt (std::vector<chess::Piece*>& v, chess::pos p2);
+
 namespace chess {
     
     GameEngine :: GameEngine (const bool player_colour) {
@@ -53,32 +55,35 @@ namespace chess {
     
     void GameEngine :: play_game (void) {
         
+        bool allowed;
         while ((game_status & 0xC0) == 0) {
-            
-//            move_piece ({3, 1}, {3, 3}); // moves the pawn from D2 to D4.
-            
+            allowed = false;
             char p[2];
             pos pin, pout;
             std::cout << "Please enter the coordinates of the piece you are moving." << std::endl;
             std::cin >> p;
             pin = char2int(p);
-            print_pos (pin);
-            
-            std::cout << "Please enter where the piece is moving to." << std::endl;
-            std::cin >> p;
-            pout = char2int(p);
-            print_pos(pout);
-            
-            move_piece (pin, pout);
-            
-            for (const auto& wp : white_pieces) {
-                wp->print_info ();
-                wp->check_moves ();
-            }
-            
-            print_board ();
-            
-            ((game_status & 0x01) > 0) ? game_status &= 0xFE : game_status |= 0x01; // toggles status bit 0.
+            if ((board[pin.x][pin.y] & ((game_status & 0x01) == 0 ? 0x80 : 0x40)) == 0) {
+                std::cout << "No " << ((game_status & 0x01) == 0 ? "Black" : "White") << " piece on this square. Please try again." << std::endl;
+            } else do {
+                std::cout << "Please enter where the piece is moving to." << std::endl;
+                std::cin >> p;
+                pout = char2int(p);
+                print_pos(pout);
+                
+                if (move_piece (pin, pout)) {
+                    print_board ();
+                    allowed = true;
+                    ((game_status & 0x01) > 0) ? game_status &= 0xFE : game_status |= 0x01; // toggles status bit 0.
+                } else {
+                    std::cout << "Not a valid move. Please try again." << std::endl;
+                }
+                
+                for (const auto& piece : ((game_status & 0x01) > 0) ? white_pieces : black_pieces) {
+//                    piece->print_info ();
+                    piece->check_moves ();
+                }
+            } while (!allowed);
             
             // Debug: break for the while loop.
 //            std::cout << static_cast<int>(game_status) << std::endl;
@@ -90,7 +95,7 @@ namespace chess {
             Pawn* pawn = new Pawn (c, {i, r}, game_status, board);
             pawn->is_first_move(true);
             c ? white_pieces.push_back(pawn) : black_pieces.push_back(pawn);
-            board[i][r] |= c ? 0x41 : 0x81; // saves info that a pawn is on that square.
+            board[i][r] |= c ? 0x41 : 0x81;
         }
     }
     
@@ -98,7 +103,7 @@ namespace chess {
         for (int8_t i = 1; i < 8; i += 5) {
             Knight* knight = new Knight (c, {i, r}, game_status, board);
             c ? white_pieces.push_back(knight) : black_pieces.push_back(knight);
-            board[i][r] |= c ? 0x42 : 0x82; // saves info that a pawn is on that square.
+            board[i][r] |= c ? 0x42 : 0x82;
         }
     }
     
@@ -106,7 +111,7 @@ namespace chess {
         for (int8_t i = 2; i < 8; i += 3) {
             Bishop* bishop = new Bishop (c, {i, r}, game_status, board);
             c ? white_pieces.push_back(bishop) : black_pieces.push_back(bishop);
-            board[i][r] |= c ? 0x44 : 0x84; // saves info that a pawn is on that square.
+            board[i][r] |= c ? 0x44 : 0x84;
         }
     }
     
@@ -114,27 +119,31 @@ namespace chess {
         for (int8_t i = 0; i < 8; i+=7) {
             Rook* rook = new Rook (c, {i, r}, game_status, board);
             c ? white_pieces.push_back(rook) : black_pieces.push_back(rook);
-            board[i][r] |= c ? 0x48 : 0x88; // saves info that a pawn is on that square.
+            board[i][r] |= c ? 0x48 : 0x88;
         }
     }
     
     void GameEngine :: place_royals (const bool c, const int8_t r) {
         Queen* queen = new Queen (c, {3, r}, game_status, board);
         c ? white_pieces.push_back(queen) : black_pieces.push_back(queen);
-        board[3][r] |= c ? 0x50 : 0x90; // saves info that a pawn is on that square.
+        board[3][r] |= c ? 0x50 : 0x90;
         King* king = new King (c, {4, r}, game_status, board);
         c ? white_pieces.push_back(king) : black_pieces.push_back(king);
-        board[4][r] |= c ? 0x60 : 0xA0; // saves info that a pawn is on that square.
+        board[4][r] |= c ? 0x60 : 0xA0;
     }
     
-    void GameEngine :: move_piece (pos pfrom, pos pto) {
+    bool GameEngine :: move_piece (pos pfrom, pos pto) {
+        bool r = false;
         for (const auto& piece : ((game_status & 0x1) > 0 ? white_pieces : black_pieces)) {
             pos temp = piece->check_position();
             if ((pfrom.x == temp.x) and (pfrom.y == temp.y)) {
-                piece->move(pto);
+                r = piece->move(pto);
+                std::cout << (r ? "true" : "false") << std::endl;
             }
             piece->valid_moves.clear();
         }
+        rm_dlt (((game_status & 0x1) == 0 ? white_pieces : black_pieces), pto);
+        return r;
     }
     
     void GameEngine :: print_board (void) {
@@ -170,6 +179,17 @@ namespace chess {
     }
     
     /****************************************************/
+}
+
+void rm_dlt (std::vector<chess::Piece*>& v, chess::pos p2) {
+    v.erase( std::remove_if( v.begin(), v.end(), [p2](chess::Piece* piece) -> bool {
+        chess::pos p = piece->check_position();
+        if ((p2.x == p.x) and (p2.y == p.y)) {
+            std::cout << "Here" << std::endl;
+            return true;
+        }
+        return false;
+    }), v.end() );
 }
 
 #endif

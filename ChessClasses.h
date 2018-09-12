@@ -16,14 +16,14 @@ namespace chess {
     class Piece {
     public:
         Piece (const bool player_colour, const pos coordinates, uint8_t& status_bits, uint8_t**& gb); // constructor
-        ~Piece (); // destructor
+        virtual ~Piece (void); // destructor
         std::vector<pos> valid_moves;
-        uint8_t check_gs () { return *pgs; }
-        pos check_position () { return position; }
-        void print_info ();
-        virtual void check_moves () = 0; // pure polymorphic function
-        virtual std::string get_type() = 0; // pure polymorphic function
-        virtual void move (pos p); // polymorphic, default for N, B, R, Q.
+        uint8_t check_gs (void) { return *pgs; }
+        pos check_position (void) { return position; }
+        void print_info (void);
+        virtual void check_moves (void) = 0; // pure polymorphic function
+        virtual std::string get_type (void) = 0; // pure polymorphic function
+        virtual bool move (const pos p); // polymorphic, default for N, B, R, Q.
     protected:
         bool is_white; // stores if the piece is White (1) or Black (0).
         bool is_taken;
@@ -37,21 +37,21 @@ namespace chess {
     class Pawn : public Piece {
     public:
         using Piece :: Piece;
-        void check_moves ();
-        void move (pos p);
+        void check_moves (void);
+        bool move (const pos p);
         void is_first_move (bool x) { first_move = x; }
-        std::string get_type() { return "Pawn"; }
+        std::string get_type (void) { return "Pawn"; }
     protected:
     private:
         bool first_move;
-        void promotion ();
+        void promotion (void);
     };
     
     class Knight : public Piece {
     public:
         using Piece :: Piece;
-        void check_moves ();
-        std::string get_type() { return "Knight"; }
+        void check_moves (void);
+        std::string get_type (void) { return "Knight"; }
     protected:
     private:
     };
@@ -59,8 +59,8 @@ namespace chess {
     class Bishop : public Piece {
     public:
         using Piece :: Piece;
-        void check_moves ();
-        std::string get_type() { return "Bishop"; }
+        void check_moves (void);
+        std::string get_type (void) { return "Bishop"; }
     protected:
     private:
     };
@@ -68,8 +68,8 @@ namespace chess {
     class Rook : public Piece {
     public:
         using Piece :: Piece;
-        void check_moves ();
-        std::string get_type() { return "Rook"; }
+        void check_moves (void);
+        std::string get_type (void) { return "Rook"; }
     protected:
     private:
     };
@@ -77,8 +77,8 @@ namespace chess {
     class Queen : public Piece {
     public:
         using Piece :: Piece;
-        void check_moves ();
-        std::string get_type() { return "Queen"; }
+        void check_moves (void);
+        std::string get_type (void) { return "Queen"; }
     protected:
     private:
     };
@@ -86,9 +86,9 @@ namespace chess {
     class King : public Piece {
     public:
         using Piece :: Piece;
-        void check_moves ();
-        void move (pos p);
-        std::string get_type() { return "King"; }
+        void check_moves (void);
+        bool move (const pos p);
+        std::string get_type (void) { return "King"; }
     protected:
     private:
     };
@@ -133,7 +133,7 @@ namespace chess {
         void place_bishops (const bool c, const int8_t r);
         void place_rooks (const bool c, const int8_t r);
         void place_royals (const bool c, const int8_t r);
-        void move_piece (pos pfrom, pos pto);
+        bool move_piece (pos pfrom, pos pto);
         void play_game (void);
         void print_pos (const pos p) { std::cout << static_cast<char>(p.x + 'A') << static_cast<int>(p.y + 1) << std::endl; }
         pos char2int (const char* p) { return {static_cast<int8_t>(p[0] - 'A'), static_cast<int8_t>(p[1] - '1')}; } };

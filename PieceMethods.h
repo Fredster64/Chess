@@ -16,16 +16,16 @@ namespace chess {
     }
     
     Piece :: ~Piece (void) {
-        
-    }
+        delete pgb;
+        delete pgs;
+    };
     
     void Piece :: print_info (void) {
         std::cout << (is_white ? "White " : "Black ") << this->get_type() << " at " << static_cast<char>(position.x + 'A') << static_cast<int>(position.y + 1) << std::endl;
     }
     
-    void Piece :: move (pos p) {
+    bool Piece :: move (const pos p) {
         // the default function for moving. Exceptions only for p and K.
-        // a failure case needs to be added.
         uint8_t** b = *pgb;
         bool valid = false;
         for (const auto& m : valid_moves) {
@@ -39,6 +39,7 @@ namespace chess {
             position = p;
             b[position.x][position.y] = temp;
         }
+        return valid;
     }
 }
 
