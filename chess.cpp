@@ -1,7 +1,10 @@
 #include <iostream>
 #include <string>
 
-#include "chess.h"
+#include "ChessClasses.h" // Class definitions
+#include "GameEngineMethods.h" // Methods for class GameEngine
+#include "PieceMethods.h" // Methods for class Piece
+#include "DerivedPieceMethods.h" // Methods from derived classes of Piece
 
 int main (void) {
     
