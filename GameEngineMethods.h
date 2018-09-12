@@ -141,6 +141,7 @@ namespace chess {
             if ((pfrom.x == temp.x) and (pfrom.y == temp.y)) {
                 pr = piece->move(pto);
                 if ((pr & 0x01) > 0) r = true;
+                std::cout << static_cast<int>(pr) << std::endl;
                 pr >>= 1;
                 if (pr > 0) { // promotion condition for pawns
                     bool c = (game_status & 0x1) > 0;

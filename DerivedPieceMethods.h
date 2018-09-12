@@ -387,7 +387,9 @@ namespace chess {
             first_move = false;
             uint8_t temp = b[position.x][position.y];
             b[position.x][position.y] = 0;
-            if (position.y == 0 or position.y == 7) {
+            std::cout << "Here1" << std::endl;
+            if (p.y == 0 or p.y == 7) {
+                std::cout << "Here2" << std::endl;
                 valid |= promotion ();
             } else {
                 position = p;
