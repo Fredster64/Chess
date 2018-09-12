@@ -5,9 +5,9 @@
 #include <vector>
 #include <string>
 
-void rm_dlt (std::vector<chess::Piece*>& v, chess::pos p2);
-
 namespace chess {
+    
+    void rm_dlt (std::vector<Piece*>& v, pos p2);
     
     GameEngine :: GameEngine (const bool player_colour) {
         is_white = player_colour;
@@ -80,7 +80,7 @@ namespace chess {
                 }
                 
                 for (const auto& piece : ((game_status & 0x01) > 0) ? white_pieces : black_pieces) {
-//                    piece->print_info ();
+                    piece->print_info ();
                     piece->check_moves ();
                 }
             } while (!allowed);
@@ -138,7 +138,6 @@ namespace chess {
             pos temp = piece->check_position();
             if ((pfrom.x == temp.x) and (pfrom.y == temp.y)) {
                 r = piece->move(pto);
-                std::cout << (r ? "true" : "false") << std::endl;
             }
             piece->valid_moves.clear();
         }
@@ -179,17 +178,14 @@ namespace chess {
     }
     
     /****************************************************/
-}
-
-void rm_dlt (std::vector<chess::Piece*>& v, chess::pos p2) {
-    v.erase( std::remove_if( v.begin(), v.end(), [p2](chess::Piece* piece) -> bool {
-        chess::pos p = piece->check_position();
-        if ((p2.x == p.x) and (p2.y == p.y)) {
-            std::cout << "Here" << std::endl;
-            return true;
-        }
-        return false;
-    }), v.end() );
+    
+    void rm_dlt (std::vector<Piece*>& v, pos p2) {
+        v.erase( std::remove_if( v.begin(), v.end(), [p2](Piece* piece) -> bool {
+            pos p = piece->check_position();
+            if ((p2.x == p.x) and (p2.y == p.y)) return true;
+            return false;
+        }), v.end() );
+    }
 }
 
 #endif
