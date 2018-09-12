@@ -5,9 +5,10 @@
 #include <vector>
 #include <string>
 
+#include "ChessIncludes.h" // for function rm_dlt ();
+#include "ChessClasses.h" // for GameEngine definition
+
 namespace chess {
-    
-    void rm_dlt (std::vector<Piece*>& v, pos p2);
     
     GameEngine :: GameEngine (const bool player_colour) {
         is_white = player_colour;
@@ -134,10 +135,43 @@ namespace chess {
     
     bool GameEngine :: move_piece (pos pfrom, pos pto) {
         bool r = false;
+        uint8_t pr;
         for (const auto& piece : ((game_status & 0x1) > 0 ? white_pieces : black_pieces)) {
             pos temp = piece->check_position();
             if ((pfrom.x == temp.x) and (pfrom.y == temp.y)) {
-                r = piece->move(pto);
+                pr = piece->move(pto);
+                if ((pr & 0x01) > 0) r = true;
+                pr >>= 1;
+                if (pr > 0) { // promotion condition for pawns
+                    bool c = (game_status & 0x1) > 0;
+                    rm_dlt ((c ? white_pieces : black_pieces), pto); // delete the pawn
+                    switch (pr) {
+                        case 0x01: {
+                            board[pto.x][pto.y] = (c ? 0x42 : 0x82);
+                            Knight* knight = new Knight(is_white, pto, game_status, board);
+                            c ? white_pieces.push_back(knight) : black_pieces.push_back(knight);
+                            break;
+                        }
+                        case 0x02: {
+                            board[pto.x][pto.y] = (c ? 0x44 : 0x84);
+                            Bishop* bishop = new Bishop(is_white, pto, game_status, board);
+                            c ? white_pieces.push_back(bishop) : black_pieces.push_back(bishop);
+                            break;
+                        }
+                        case 0x04: {
+                            board[pto.x][pto.y] = (c ? 0x48 : 0x88);
+                            Rook* rook = new Rook(is_white, pto, game_status, board);
+                            c ? white_pieces.push_back(rook) : black_pieces.push_back(rook);
+                            break;
+                        }
+                        case 0x08: {
+                            board[pto.x][pto.y] = (c ? 0x50 : 0x90);
+                            Queen* queen = new Queen(is_white, pto, game_status, board);
+                            c ? white_pieces.push_back(queen) : black_pieces.push_back(queen);
+                            break;
+                        }
+                    }
+                }
             }
             piece->valid_moves.clear();
         }
@@ -179,13 +213,6 @@ namespace chess {
     
     /****************************************************/
     
-    void rm_dlt (std::vector<Piece*>& v, pos p2) {
-        v.erase( std::remove_if( v.begin(), v.end(), [p2](Piece* piece) -> bool {
-            pos p = piece->check_position();
-            if ((p2.x == p.x) and (p2.y == p.y)) return true;
-            return false;
-        }), v.end() );
-    }
 }
 
 #endif

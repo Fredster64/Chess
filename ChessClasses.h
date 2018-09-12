@@ -23,7 +23,7 @@ namespace chess {
         void print_info (void);
         virtual void check_moves (void) = 0; // pure polymorphic function
         virtual std::string get_type (void) = 0; // pure polymorphic function
-        virtual bool move (const pos p); // polymorphic, default for N, B, R, Q.
+        virtual uint8_t move (const pos p); // polymorphic, default for N, B, R, Q.
     protected:
         bool is_white; // stores if the piece is White (1) or Black (0).
         pos position; // the x-y position of the piece.
@@ -37,13 +37,13 @@ namespace chess {
     public:
         using Piece :: Piece;
         void check_moves (void);
-        bool move (const pos p);
+        uint8_t move (const pos p);
         void is_first_move (bool x) { first_move = x; }
         std::string get_type (void) { return "Pawn"; }
     protected:
     private:
         bool first_move;
-        void promotion (void);
+        uint8_t promotion (void);
     };
     
     class Knight : public Piece {
@@ -86,7 +86,7 @@ namespace chess {
     public:
         using Piece :: Piece;
         void check_moves (void);
-        bool move (const pos p);
+        uint8_t move (const pos p);
         std::string get_type (void) { return "King"; }
     protected:
     private:
@@ -98,7 +98,6 @@ namespace chess {
     public:
         GameEngine (const bool player_colour); // constructor
         ~GameEngine (void); // destructor
-        void print_board (void); // prints the current board
     protected:
     private:
         bool is_white; // stores if the player White (1) or Black (0).
@@ -134,6 +133,7 @@ namespace chess {
         void place_royals (const bool c, const int8_t r);
         bool move_piece (pos pfrom, pos pto);
         void play_game (void);
+        void print_board (void); // prints the current board
         void print_pos (const pos p) { std::cout << static_cast<char>(p.x + 'A') << static_cast<int>(p.y + 1) << std::endl; }
         pos char2int (const char* p) { return {static_cast<int8_t>(p[0] - 'A'), static_cast<int8_t>(p[1] - '1')}; } };
     /***********************************************************/

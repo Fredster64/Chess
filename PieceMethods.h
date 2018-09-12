@@ -5,6 +5,8 @@
 #include <vector>
 #include <string>
 
+#include "ChessClasses.h" // for Class Definitions
+
 namespace chess {
     
     Piece :: Piece (const bool piece_colour, const pos coordinates, uint8_t& status_bits, uint8_t**& gb) {
@@ -23,16 +25,17 @@ namespace chess {
         std::cout << (is_white ? "White " : "Black ") << this->get_type() << " at " << static_cast<char>(position.x + 'A') << static_cast<int>(position.y + 1) << std::endl;
     }
     
-    bool Piece :: move (const pos p) {
+    uint8_t Piece :: move (const pos p) {
         // the default function for moving. Exceptions only for p and K.
         uint8_t** b = *pgb;
-        bool valid = false;
+        uint8_t valid = 0;
         for (const auto& m : valid_moves) {
             if (m.x == p.x and m.y == p.y) {
-                valid = true;
+                valid = 1;
+                break;
             }
         }
-        if (valid) {
+        if (valid == 1) {
             uint8_t temp = b[position.x][position.y];
             b[position.x][position.y] = 0;
             position = p;

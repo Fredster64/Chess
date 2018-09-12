@@ -1,7 +1,11 @@
 #ifndef DERIVEDPIECEMETHODS_H
 #define DERIVEDPIECEMETHODS_H
 
+#include <iostream>
 #include <vector>
+
+#include "ChessClasses.h" // for Class Definitions
+#include "PieceMethods.h" // Not sure if necessary but just in case (polymorphism)
 
 namespace chess {
     
@@ -325,50 +329,43 @@ namespace chess {
             }
         }
         // UP
-        --posx;
-        if (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
+        if (--posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
             if ((b[posx][posy] & 0xC0) != comp) {
                 valid_moves.push_back({posx, posy});
             }
         }
         // UP-LEFT
-        --posx;
-        if (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
+        if (--posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
             if ((b[posx][posy] & 0xC0) != comp) {
                 valid_moves.push_back({posx, posy});
             }
         }
         // LEFT
-        --posy;
-        if (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
+        if (posx >= 0 and --posy >= 0 and posx < 8 and posy < 8) {
             if ((b[posx][posy] & 0xC0) != comp) {
                 valid_moves.push_back({posx, posy});
             }
         }
         // DOWN-LEFT
-        --posy;
-        if (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
+        if (posx >= 0 and --posy >= 0 and posx < 8 and posy < 8) {
             if ((b[posx][posy] & 0xC0) != comp) {
                 valid_moves.push_back({posx, posy});
             }
         }
         // DOWN
-        ++posx;
-        if (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
+        if (++posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
             if ((b[posx][posy] & 0xC0) != comp) {
                 valid_moves.push_back({posx, posy});
             }
         }
         // DOWN-RIGHT
-        ++posx;
-        if (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
+        if (++posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
             if ((b[posx][posy] & 0xC0) != comp) {
                 valid_moves.push_back({posx, posy});
             }
         }
         // RIGHT
-        ++posy;
-        if (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
+        if (posx >= 0 and ++posy >= 0 and posx < 8 and posy < 8) {
             if ((b[posx][posy] & 0xC0) != comp) {
                 valid_moves.push_back({posx, posy});
             }
@@ -376,17 +373,41 @@ namespace chess {
 //        for (const auto& move : valid_moves) { print_pos(move); }
     }
     
-    bool Pawn :: move (pos p) {
+    uint8_t Pawn :: move (pos p) {
         // if first move occurs, it must be set to false.
         uint8_t** b = *pgb;
-        bool valid = false;
+        uint8_t valid = 0;
         for (const auto& m : valid_moves) {
             if (m.x == p.x and m.y == p.y) {
-                valid = true;
+                valid = 1;
+                break;
             }
         }
-        if (valid) {
+        if (valid == 1) {
             first_move = false;
+            uint8_t temp = b[position.x][position.y];
+            b[position.x][position.y] = 0;
+            if (position.y == 0 or position.y == 7) {
+                valid |= promotion ();
+            } else {
+                position = p;
+                b[position.x][position.y] = temp;
+            }
+        }
+        return valid;
+    }
+
+    uint8_t King :: move (pos p) {
+        // an exception case is made for the castling move (not yet implemented).
+        uint8_t** b = *pgb;
+        uint8_t valid = 0;
+        for (const auto& m : valid_moves) {
+            if (m.x == p.x and m.y == p.y) {
+                valid = 1;
+                break;
+            }
+        }
+        if (valid == 1) {
             uint8_t temp = b[position.x][position.y];
             b[position.x][position.y] = 0;
             position = p;
@@ -394,23 +415,41 @@ namespace chess {
         }
         return valid;
     }
-
-    bool King :: move (pos p) {
-        // an exception case is made for the castling move (not yet implemented).
-        uint8_t** b = *pgb;
-        bool valid = false;
-        for (const auto& m : valid_moves) {
-            if (m.x == p.x and m.y == p.y) {
-                valid = true;
+    
+    uint8_t Pawn :: promotion (void) {
+        char c;
+        do {
+            std::cout << "What would you like to promote the pawn to? (N, B, R, Q)" << std::endl;
+            std::cin >> c;
+            if (!std::cin) {
+                /* If the input was invalid: */
+                std::cout << "Something went wrong. Please try again." << std::endl;
+                std::cin.clear();
+                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                c = ' ';
+            } else if (c != 'N' and c != 'B' and c != 'R' and c != 'Q') {
+                std::cout << "That is not a valid piece. Please try again." << std::endl;
+            } else switch (c) {
+                case 'N': {
+                    std::cout << "You have chosen to promote to a Knight!" << std::endl;
+                    return 0x02;
+                }
+                case 'B': {
+                    std::cout << "You have chosen to promote to a Bishop!" << std::endl;
+                    return 0x04;
+                }
+                case 'R': {
+                    std::cout << "You have chosen to promote to a Rook!" << std::endl;
+                    return 0x08;
+                }
+                case 'Q': {
+                    std::cout << "You have chosen to promote to a Queen!" << std::endl;
+                    return 0x10;
+                }
             }
-        }
-        if (valid) {
-            uint8_t temp = b[position.x][position.y];
-            b[position.x][position.y] = 0;
-            position = p;
-            b[position.x][position.y] = temp;
-        }
-        return valid;
+        } while (c != 'N' and c != 'B' and c != 'R' and c != 'Q');
+        /* Unreachable code, added to silence to compiler. */
+        return 1;
     }
 }
 
