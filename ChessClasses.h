@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <memory>
 
 namespace chess {
     
@@ -16,7 +17,7 @@ namespace chess {
     class Piece {
     public:
         Piece (const bool player_colour, const pos coordinates, uint8_t& status_bits, uint8_t**& gb); // constructor
-        virtual ~Piece (void); // destructor
+        ~Piece (void); // destructor
         std::vector<pos> valid_moves;
         uint8_t check_gs (void) { return *pgs; }
         pos check_position (void) { return position; }
@@ -35,20 +36,22 @@ namespace chess {
     
     class Pawn : public Piece {
     public:
-        using Piece :: Piece;
+        using Piece :: Piece; // inherit constructor from Piece
+//        ~Pawn (void); // destructor
         void check_moves (void);
         uint8_t move (const pos p);
-        void is_first_move (bool x) { first_move = x; }
         std::string get_type (void) { return "Pawn"; }
+        void is_first_move (bool x) { first_move = x; }
     protected:
     private:
-        bool first_move;
         uint8_t promotion (void);
+        bool first_move;
     };
     
     class Knight : public Piece {
     public:
         using Piece :: Piece;
+//        ~Knight (void);
         void check_moves (void);
         std::string get_type (void) { return "Knight"; }
     protected:
@@ -58,6 +61,7 @@ namespace chess {
     class Bishop : public Piece {
     public:
         using Piece :: Piece;
+//        ~Bishop (void);
         void check_moves (void);
         std::string get_type (void) { return "Bishop"; }
     protected:
@@ -67,6 +71,7 @@ namespace chess {
     class Rook : public Piece {
     public:
         using Piece :: Piece;
+//        ~Rook (void);
         void check_moves (void);
         std::string get_type (void) { return "Rook"; }
     protected:
@@ -76,6 +81,7 @@ namespace chess {
     class Queen : public Piece {
     public:
         using Piece :: Piece;
+//        ~Queen (void);
         void check_moves (void);
         std::string get_type (void) { return "Queen"; }
     protected:
@@ -85,6 +91,7 @@ namespace chess {
     class King : public Piece {
     public:
         using Piece :: Piece;
+//        ~King (void);
         void check_moves (void);
         uint8_t move (const pos p);
         std::string get_type (void) { return "King"; }
@@ -92,6 +99,15 @@ namespace chess {
     private:
     };
     /****************************************************************/
+    
+    /* Create some smart pointers for the pieces */
+    typedef std::shared_ptr<Piece> PiecePtr;
+    typedef std::shared_ptr<Pawn> PawnPtr;
+    typedef std::shared_ptr<Knight> KnightPtr;
+    typedef std::shared_ptr<Bishop> BishopPtr;
+    typedef std::shared_ptr<Rook> RookPtr;
+    typedef std::shared_ptr<Queen> QueenPtr;
+    typedef std::shared_ptr<King> KingPtr;
     
     /* Class for the Game Engine. Stores the game information. */
     class GameEngine {
@@ -123,8 +139,10 @@ namespace chess {
         /* if Bit6 HIGH - Current player is in Checkmate. */
         /* if Bit7 HIGH - Game is in Stalemate.           */
         /**************************************************/
-        std::vector<Piece*> white_pieces; // stores the white game pieces in a vector.
-        std::vector<Piece*> black_pieces; // stores the black game pieces in a vector.
+//        std::vector<Piece*> white_pieces; // stores the white game pieces in a vector.
+//        std::vector<Piece*> black_pieces; // stores the black game pieces in a vector.
+        std::vector<PiecePtr> white_pieces;
+        std::vector<PiecePtr> black_pieces;
         /* Functions that create and place the pieces upon class construction */
         void place_pawns (const bool c, const int8_t r);
         void place_knights (const bool c, const int8_t r);

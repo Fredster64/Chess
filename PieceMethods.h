@@ -17,8 +17,9 @@ namespace chess {
     }
     
     Piece :: ~Piece (void) {
-        delete pgb;
-        delete pgs;
+        valid_moves.clear();
+        pgs = nullptr;
+        pgb = nullptr;
     };
     
     void Piece :: print_info (void) {

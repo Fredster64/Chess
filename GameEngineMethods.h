@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <memory>
 
 #include "ChessIncludes.h" // for function rm_dlt ();
 #include "ChessClasses.h" // for GameEngine definition
@@ -17,9 +18,7 @@ namespace chess {
         board = new uint8_t*[8];
         for (int8_t i = 0; i < 8; ++i) {
             board[i] = new uint8_t[8];
-            for (int8_t j = 0; j < 8; ++j) {
-                board[i][j] = 0;
-            }
+            for (int8_t j = 0; j < 8; ++j) { board[i][j] = 0; }
         }
         bool colour = true;
         int8_t row = 1;
@@ -33,30 +32,27 @@ namespace chess {
             colour = !colour;
             row = 6;
         } while (!colour);
-        // piece information
-        for (const auto& bp : black_pieces) {
-            bp->print_info ();
-        }
-        for (const auto& wp : white_pieces) {
-            wp->print_info ();
-            wp->check_moves ();
-        }
-        
+        for (const auto& wp : white_pieces) { wp->check_moves (); }
         print_board ();
-        
         play_game ();
     }
     
     GameEngine :: ~GameEngine (void) {
         for (uint8_t i = 0; i < 8; ++i) {
             delete board[i];
+            board[i] = nullptr;
         }
         delete board;
+        board = nullptr;
+        for (auto& p : white_pieces) { p = nullptr; }
+        white_pieces.clear();
+        for (auto& p : black_pieces) { p = nullptr; }
+        black_pieces.clear();
     }
     
     void GameEngine :: play_game (void) {
-        
         bool allowed;
+        uint8_t counter;
         while ((game_status & 0xC0) == 0) {
             allowed = false;
             char p[2];
@@ -70,67 +66,75 @@ namespace chess {
                 std::cout << "Please enter where the piece is moving to." << std::endl;
                 std::cin >> p;
                 pout = char2int(p);
-                print_pos(pout);
-                
                 if (move_piece (pin, pout)) {
                     print_board ();
                     allowed = true;
                     ((game_status & 0x01) > 0) ? game_status &= 0xFE : game_status |= 0x01; // toggles status bit 0.
-                } else {
-                    std::cout << "Not a valid move. Please try again." << std::endl;
-                }
-                
+                } else { std::cout << "Not a valid move. Please try again." << std::endl; }
+                counter = 0;
                 for (const auto& piece : ((game_status & 0x01) > 0) ? white_pieces : black_pieces) {
-                    piece->print_info ();
+//                    piece->print_info ();
                     piece->check_moves ();
+                    for (const auto& move : piece->valid_moves) {
+                        ++counter;
+                    }
                 }
+                // check if valid moves exist:
+                if (counter == 0) { game_status |= 0x80; }
+                // check if in 'Check':
+                
+                // if both true then in Checkmate:
+                
             } while (!allowed);
-            
-            // Debug: break for the while loop.
-//            std::cout << static_cast<int>(game_status) << std::endl;
         }
     }
     
     void GameEngine :: place_pawns (const bool c, const int8_t r) {
         for (int8_t i = 0; i < 8; ++i) {
-            Pawn* pawn = new Pawn (c, {i, r}, game_status, board);
+            PawnPtr pawn (new Pawn (c, {i, r}, game_status, board));
             pawn->is_first_move(true);
-            c ? white_pieces.push_back(pawn) : black_pieces.push_back(pawn);
+            c ? white_pieces.push_back(std::move(pawn)) : black_pieces.push_back(std::move(pawn));
             board[i][r] |= c ? 0x41 : 0x81;
+            pawn = nullptr;
         }
     }
     
     void GameEngine :: place_knights (const bool c, const int8_t r) {
         for (int8_t i = 1; i < 8; i += 5) {
-            Knight* knight = new Knight (c, {i, r}, game_status, board);
-            c ? white_pieces.push_back(knight) : black_pieces.push_back(knight);
+            KnightPtr knight (new Knight (c, {i, r}, game_status, board));
+            c ? white_pieces.push_back(std::move(knight)) : black_pieces.push_back(std::move(knight));
             board[i][r] |= c ? 0x42 : 0x82;
+            knight = nullptr;
         }
     }
     
     void GameEngine :: place_bishops (const bool c, const int8_t r) {
         for (int8_t i = 2; i < 8; i += 3) {
-            Bishop* bishop = new Bishop (c, {i, r}, game_status, board);
-            c ? white_pieces.push_back(bishop) : black_pieces.push_back(bishop);
+            BishopPtr bishop (new Bishop (c, {i, r}, game_status, board));
+            c ? white_pieces.push_back(std::move(bishop)) : black_pieces.push_back(std::move(bishop));
             board[i][r] |= c ? 0x44 : 0x84;
+            bishop = nullptr;
         }
     }
     
     void GameEngine :: place_rooks (const bool c, const int8_t r) {
         for (int8_t i = 0; i < 8; i+=7) {
-            Rook* rook = new Rook (c, {i, r}, game_status, board);
-            c ? white_pieces.push_back(rook) : black_pieces.push_back(rook);
+            RookPtr rook (new Rook (c, {i, r}, game_status, board));
+            c ? white_pieces.push_back(std::move(rook)) : black_pieces.push_back(std::move(rook));
             board[i][r] |= c ? 0x48 : 0x88;
+            rook = nullptr;
         }
     }
     
     void GameEngine :: place_royals (const bool c, const int8_t r) {
-        Queen* queen = new Queen (c, {3, r}, game_status, board);
-        c ? white_pieces.push_back(queen) : black_pieces.push_back(queen);
+        QueenPtr queen (new Queen (c, {3, r}, game_status, board));
+        c ? white_pieces.push_back(std::move(queen)) : black_pieces.push_back(std::move(queen));
         board[3][r] |= c ? 0x50 : 0x90;
-        King* king = new King (c, {4, r}, game_status, board);
-        c ? white_pieces.push_back(king) : black_pieces.push_back(king);
+        KingPtr king (new King (c, {4, r}, game_status, board));
+        c ? white_pieces.push_back(std::move(king)) : black_pieces.push_back(std::move(king));
         board[4][r] |= c ? 0x60 : 0xA0;
+        queen = nullptr;
+        king = nullptr;
     }
     
     bool GameEngine :: move_piece (pos pfrom, pos pto) {
@@ -141,7 +145,6 @@ namespace chess {
             if ((pfrom.x == temp.x) and (pfrom.y == temp.y)) {
                 pr = piece->move(pto);
                 if ((pr & 0x01) > 0) r = true;
-                std::cout << static_cast<int>(pr) << std::endl;
                 pr >>= 1;
                 if (pr > 0) { // promotion condition for pawns
                     bool c = (game_status & 0x1) > 0;
@@ -149,26 +152,30 @@ namespace chess {
                     switch (pr) {
                         case 0x01: {
                             board[pto.x][pto.y] = (c ? 0x42 : 0x82);
-                            Knight* knight = new Knight(is_white, pto, game_status, board);
-                            c ? white_pieces.push_back(knight) : black_pieces.push_back(knight);
+                            KnightPtr knight (new Knight (is_white, pto, game_status, board));
+                            c ? white_pieces.push_back(std::move(knight)) : black_pieces.push_back(std::move(knight));
+                            knight = nullptr;
                             break;
                         }
                         case 0x02: {
                             board[pto.x][pto.y] = (c ? 0x44 : 0x84);
-                            Bishop* bishop = new Bishop(is_white, pto, game_status, board);
-                            c ? white_pieces.push_back(bishop) : black_pieces.push_back(bishop);
+                            BishopPtr bishop (new Bishop (is_white, pto, game_status, board));
+                            c ? white_pieces.push_back(std::move(bishop)) : black_pieces.push_back(std::move(bishop));
+                            bishop = nullptr;
                             break;
                         }
                         case 0x04: {
                             board[pto.x][pto.y] = (c ? 0x48 : 0x88);
-                            Rook* rook = new Rook(is_white, pto, game_status, board);
-                            c ? white_pieces.push_back(rook) : black_pieces.push_back(rook);
+                            RookPtr rook (new Rook (is_white, pto, game_status, board));
+                            c ? white_pieces.push_back(std::move(rook)) : black_pieces.push_back(std::move(rook));
+                            rook = nullptr;
                             break;
                         }
                         case 0x08: {
                             board[pto.x][pto.y] = (c ? 0x50 : 0x90);
-                            Queen* queen = new Queen(is_white, pto, game_status, board);
-                            c ? white_pieces.push_back(queen) : black_pieces.push_back(queen);
+                            QueenPtr queen (new Queen (is_white, pto, game_status, board));
+                            c ? white_pieces.push_back(std::move(queen)) : black_pieces.push_back(std::move(queen));
+                            queen = nullptr;
                             break;
                         }
                     }

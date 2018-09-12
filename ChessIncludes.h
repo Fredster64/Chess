@@ -1,11 +1,13 @@
 #ifndef CHESSINCLUDES_H
 #define CHESSINCLUDES_H
 
+#include <memory>
+
 #include "ChessClasses.h" // Class definitions
 
 /* All custom, non-member function prototypes go here. */
 
-void rm_dlt (std::vector<chess::Piece*>& v, const chess::pos p2);
+void rm_dlt (std::vector<chess::PiecePtr>& v, const chess::pos p2);
 
 /*******************************************************/
 
@@ -15,12 +17,12 @@ void rm_dlt (std::vector<chess::Piece*>& v, const chess::pos p2);
 
 /* All custom, non-member function definitions go here. */
 
-void rm_dlt (std::vector<chess::Piece*>& v, const chess::pos p2) {
-    v.erase( std::remove_if( v.begin(), v.end(), [p2](chess::Piece* piece) -> bool {
+void rm_dlt (std::vector<chess::PiecePtr>& v, const chess::pos p2) {
+    v.erase (std::remove_if (v.begin(), v.end(), [p2] (chess::PiecePtr piece) -> bool {
         chess::pos p = piece->check_position();
         if ((p2.x == p.x) and (p2.y == p.y)) return true;
         return false;
-    }), v.end() );
+    }), v.end());
 }
 
 /********************************************************/
