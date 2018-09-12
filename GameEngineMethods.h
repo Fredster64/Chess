@@ -32,7 +32,7 @@ namespace chess {
             colour = !colour;
             row = 6;
         } while (!colour);
-        for (const auto& wp : white_pieces) { wp->check_moves (); }
+        for (const auto& wp : white_pieces) { wp->check_moves (wp->valid_moves); }
         print_board ();
         play_game ();
     }
@@ -67,7 +67,6 @@ namespace chess {
                 std::cin >> p;
                 pout = char2int(p);
                 if (move_piece (pin, pout)) {
-                    std::cout << "Piece completely moved." << std::endl;
                     print_board ();
                     allowed = true;
                     ((game_status & 0x01) > 0) ? game_status &= 0xFE : game_status |= 0x01; // toggles status bit 0.
@@ -75,18 +74,18 @@ namespace chess {
                 counter = 0;
                 for (const auto& piece : ((game_status & 0x01) > 0) ? white_pieces : black_pieces) {
 //                    piece->print_info ();
-                    piece->check_moves ();
+                    piece->check_moves (piece->valid_moves);
                     for (const auto& move : piece->valid_moves) {
                         ++counter;
                     }
                 }
-                // check if valid moves exist:
-                if (counter == 0) { game_status |= 0x80; }
-                // check if in 'Check':
-                
-                // if both true then in Checkmate:
-                
             } while (!allowed);
+            // check if valid moves exist:
+            if (counter == 0) { game_status |= 0x80; }
+            // check if in 'Check':
+            if (in_check((game_status & 0x01) > 0)) { game_status |= 0x20; }
+            // if both true then in Checkmate:
+            if ((game_status & 0xA0) == 0xA0) { game_status |= 0x40; }
         }
     }
     
@@ -141,12 +140,10 @@ namespace chess {
             piece->valid_moves.clear();
         }
         if ((pr & 0x01) > 0) { r = true; }
-        std::cout << static_cast<int>(r) << std::endl;
         pr >>= 1;
         if (pr > 0) { // promotion condition for pawns
             bool c = (game_status & 0x1) > 0;
             rm_dlt ((c ? white_pieces : black_pieces), pto); // delete the pawn
-            std::cout << "Got here" << std::endl;
             switch (pr) {
                 case 0x01: {
                     KnightPtr knight (new Knight (is_white, pto, game_status, board));
@@ -176,6 +173,26 @@ namespace chess {
         }
         rm_dlt (((game_status & 0x1) == 0 ? white_pieces : black_pieces), pto); // delete pieces of the opposite colour if taken
         return r;
+    }
+    
+    bool GameEngine :: in_check (bool c) {
+        // find all cells that the king cannot exist in. If the current cell is in the list, then the king is in check.
+        uint8_t k_score = c ? 0x60 : 0xA0;
+        uint8_t comp = c ? 0x40 : 0x80;
+        pos k_pos;
+        // search for the King's cell and look for all cells occupied by you
+        for (int8_t j = 0; j < 8; ++j) {
+            for (int8_t i = 0; i < 8; ++i) {
+                if (board[i][j] == k_score) { k_pos = {i, j}; }
+                else if ((board[i][j] | comp) > 0) { danger_cells.push_back({i, j}); }
+            }
+        }
+        // look for all cells that can be attacked by the opponent
+        for (const auto& piece : (c ? black_pieces : white_pieces)) {
+            piece->check_moves (danger_cells, false);
+        }
+        // check if the k_pos is in v.
+        return vec_search (danger_cells, k_pos);
     }
     
     void GameEngine :: print_board (void) {

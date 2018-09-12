@@ -9,38 +9,41 @@
 
 namespace chess {
     
-    void Pawn :: check_moves (void) {
+    void Pawn :: check_moves (std::vector<pos>& v, bool t) {
         int8_t posx = position.x;
         int8_t posy = position.y;
         uint8_t** b = *pgb; // put the game board array in the current scope
         
         // will work on 'check' case conditions and en-passant rules later.
         is_white ? ++posy : --posy;
-        if (b[posx][posy] == 0 and posy != 0 and posy != 7) {
-            valid_moves.push_back({posx, posy});
-        }
+        
         uint8_t comp = is_white ? 0x80 : 0x40;
         if (posx < 7) {
             if ((b[posx + 1][posy] & 0xC0) == comp) {
-                valid_moves.push_back({(++posx)--, posy});
+                v.push_back({(++posx)--, posy});
             }
         }
         if (posx > 0) {
             if ((b[posx - 1][posy] & 0xC0) == comp) {
-                valid_moves.push_back({(--posx)++, posy});
+                v.push_back({(--posx)++, posy});
             }
         }
-        if (first_move) {
-            if (b[posx][posy] == 0) {
-                is_white ? ++posy : --posy;
+        if (t) {
+            if (b[posx][posy] == 0 and posy != 0 and posy != 7) {
+                v.push_back({posx, posy});
+            }
+            if (first_move) {
                 if (b[posx][posy] == 0) {
-                    valid_moves.push_back({posx, posy});
+                    is_white ? ++posy : --posy;
+                    if (b[posx][posy] == 0) {
+                        valid_moves.push_back({posx, posy});
+                    }
                 }
             }
         }
     }
     
-    void Knight :: check_moves (void) {
+    void Knight :: check_moves (std::vector<pos>& v, bool t) {
         const int8_t posx = position.x;
         const int8_t posy = position.y;
         uint8_t** b = *pgb; // put the game board array in the current scope
@@ -51,54 +54,54 @@ namespace chess {
         if (posx > 1) {
             if (posy > 0) {
                 if ((b[posx - 2][posy - 1] & 0xC0) != comp) {
-                    valid_moves.push_back({static_cast<int8_t>(posx - 2), static_cast<int8_t>(posy - 1)});
+                    v.push_back({static_cast<int8_t>(posx - 2), static_cast<int8_t>(posy - 1)});
                 }
             }
             if (posy < 7) {
                 if ((b[posx - 2][posy + 1] & 0xC0) != comp) {
-                    valid_moves.push_back({static_cast<int8_t>(posx - 2), static_cast<int8_t>(posy + 1)});
+                    v.push_back({static_cast<int8_t>(posx - 2), static_cast<int8_t>(posy + 1)});
                 }
             }
         }
         if (posx > 0) {
             if (posy > 1) {
                 if ((b[posx - 1][posy - 2] & 0xC0) != comp) {
-                    valid_moves.push_back({static_cast<int8_t>(posx - 1), static_cast<int8_t>(posy - 2)});
+                    v.push_back({static_cast<int8_t>(posx - 1), static_cast<int8_t>(posy - 2)});
                 }
             }
             if (posy < 6) {
                 if ((b[posx - 1][posy + 2] & 0xC0) != comp) {
-                    valid_moves.push_back({static_cast<int8_t>(posx - 1), static_cast<int8_t>(posy + 2)});
+                    v.push_back({static_cast<int8_t>(posx - 1), static_cast<int8_t>(posy + 2)});
                 }
             }
         }
         if (posx < 6) {
             if (posy > 0) {
                 if ((b[posx + 2][posy - 1] & 0xC0) != comp) {
-                    valid_moves.push_back({static_cast<int8_t>(posx + 2), static_cast<int8_t>(posy - 1)});
+                    v.push_back({static_cast<int8_t>(posx + 2), static_cast<int8_t>(posy - 1)});
                 }
             }
             if (posy < 7) {
                 if ((b[posx + 2][posy + 1] & 0xC0) != comp) {
-                    valid_moves.push_back({static_cast<int8_t>(posx + 2), static_cast<int8_t>(posy + 1)});
+                    v.push_back({static_cast<int8_t>(posx + 2), static_cast<int8_t>(posy + 1)});
                 }
             }
         }
         if (posx < 7) {
             if (posy > 1) {
                 if ((b[posx + 1][posy - 2] & 0xC0) != comp) {
-                    valid_moves.push_back({static_cast<int8_t>(posx + 1), static_cast<int8_t>(posy - 2)});
+                    v.push_back({static_cast<int8_t>(posx + 1), static_cast<int8_t>(posy - 2)});
                 }
             }
             if (posy < 6) {
                 if ((b[posx + 1][posy + 2] & 0xC0) != comp) {
-                    valid_moves.push_back({static_cast<int8_t>(posx + 1), static_cast<int8_t>(posy + 2)});
+                    v.push_back({static_cast<int8_t>(posx + 1), static_cast<int8_t>(posy + 2)});
                 }
             }
         }
     }
     
-    void Bishop :: check_moves (void) {
+    void Bishop :: check_moves (std::vector<pos>& v, bool t) {
         int8_t posx = position.x + 1;
         int8_t posy = position.y + 1;
         uint8_t** b = *pgb; // put the game board array in the current scope
@@ -110,10 +113,10 @@ namespace chess {
             if ((b[posx][posy] & 0xC0) == comp) {
                 break;
             } else if (b[posx][posy] > 0) {
-                valid_moves.push_back({posx, posy});
+                v.push_back({posx, posy});
                 break;
             } else {
-                valid_moves.push_back({posx++, posy++});
+                v.push_back({posx++, posy++});
             }
         }
         posx = position.x + 1;
@@ -122,10 +125,10 @@ namespace chess {
             if ((b[posx][posy] & 0xC0) == comp) {
                 break;
             } else if (b[posx][posy] > 0) {
-                valid_moves.push_back({posx, posy});
+                v.push_back({posx, posy});
                 break;
             } else {
-                valid_moves.push_back({posx++, posy--});
+                v.push_back({posx++, posy--});
             }
         }
         posx = position.x - 1;
@@ -134,10 +137,10 @@ namespace chess {
             if ((b[posx][posy] & 0xC0) == comp) {
                 break;
             } else if (b[posx][posy] > 0) {
-                valid_moves.push_back({posx, posy});
+                v.push_back({posx, posy});
                 break;
             } else {
-                valid_moves.push_back({posx--, posy++});
+                v.push_back({posx--, posy++});
             }
         }
         posx = position.x - 1;
@@ -146,15 +149,15 @@ namespace chess {
             if ((b[posx][posy] & 0xC0) == comp) {
                 break;
             } else if (b[posx][posy] > 0) {
-                valid_moves.push_back({posx, posy});
+                v.push_back({posx, posy});
                 break;
             } else {
-                valid_moves.push_back({posx--, posy--});
+                v.push_back({posx--, posy--});
             }
         }
     }
     
-    void Rook :: check_moves (void) {
+    void Rook :: check_moves (std::vector<pos>& v, bool t) {
         int8_t posx = position.x + 1;
         int8_t posy = position.y;
         uint8_t** b = *pgb; // put the game board array in the current scope
@@ -166,10 +169,10 @@ namespace chess {
             if ((b[posx][posy] & 0xC0) == comp) {
                 break;
             } else if (b[posx][posy] > 0) {
-                valid_moves.push_back({posx, posy});
+                v.push_back({posx, posy});
                 break;
             } else {
-                valid_moves.push_back({posx++, posy});
+                v.push_back({posx++, posy});
             }
         }
         posx = position.x - 1;
@@ -178,10 +181,10 @@ namespace chess {
             if ((b[posx][posy] & 0xC0) == comp) {
                 break;
             } else if (b[posx][posy] > 0) {
-                valid_moves.push_back({posx, posy});
+                v.push_back({posx, posy});
                 break;
             } else {
-                valid_moves.push_back({posx--, posy});
+                v.push_back({posx--, posy});
             }
         }
         posx = position.x;
@@ -190,10 +193,10 @@ namespace chess {
             if ((b[posx][posy] & 0xC0) == comp) {
                 break;
             } else if (b[posx][posy] > 0) {
-                valid_moves.push_back({posx, posy});
+                v.push_back({posx, posy});
                 break;
             } else {
-                valid_moves.push_back({posx, posy++});
+                v.push_back({posx, posy++});
             }
         }
         posx = position.x;
@@ -202,15 +205,15 @@ namespace chess {
             if ((b[posx][posy] & 0xC0) == comp) {
                 break;
             } else if (b[posx][posy] > 0) {
-                valid_moves.push_back({posx, posy});
+                v.push_back({posx, posy});
                 break;
             } else {
-                valid_moves.push_back({posx, posy--});
+                v.push_back({posx, posy--});
             }
         }
     }
     
-    void Queen :: check_moves (void) {
+    void Queen :: check_moves (std::vector<pos>& v, bool t) {
         int8_t posx = position.x + 1;
         int8_t posy = position.y + 1;
         uint8_t** b = *pgb; // put the game board array in the current scope
@@ -222,10 +225,10 @@ namespace chess {
             if ((b[posx][posy] & 0xC0) == comp) {
                 break;
             } else if (b[posx][posy] > 0) {
-                valid_moves.push_back({posx, posy});
+                v.push_back({posx, posy});
                 break;
             } else {
-                valid_moves.push_back({posx++, posy++});
+                v.push_back({posx++, posy++});
             }
         }
         posx = position.x + 1;
@@ -234,10 +237,10 @@ namespace chess {
             if ((b[posx][posy] & 0xC0) == comp) {
                 break;
             } else if (b[posx][posy] > 0) {
-                valid_moves.push_back({posx, posy});
+                v.push_back({posx, posy});
                 break;
             } else {
-                valid_moves.push_back({posx++, posy--});
+                v.push_back({posx++, posy--});
             }
         }
         posx = position.x - 1;
@@ -246,10 +249,10 @@ namespace chess {
             if ((b[posx][posy] & 0xC0) == comp) {
                 break;
             } else if (b[posx][posy] > 0) {
-                valid_moves.push_back({posx, posy});
+                v.push_back({posx, posy});
                 break;
             } else {
-                valid_moves.push_back({posx--, posy++});
+                v.push_back({posx--, posy++});
             }
         }
         posx = position.x - 1;
@@ -258,10 +261,10 @@ namespace chess {
             if ((b[posx][posy] & 0xC0) == comp) {
                 break;
             } else if (b[posx][posy] > 0) {
-                valid_moves.push_back({posx, posy});
+                v.push_back({posx, posy});
                 break;
             } else {
-                valid_moves.push_back({posx--, posy--});
+                v.push_back({posx--, posy--});
             }
         }
         posx = position.x + 1;
@@ -270,10 +273,10 @@ namespace chess {
             if ((b[posx][posy] & 0xC0) == comp) {
                 break;
             } else if (b[posx][posy] > 0) {
-                valid_moves.push_back({posx, posy});
+                v.push_back({posx, posy});
                 break;
             } else {
-                valid_moves.push_back({posx++, posy});
+                v.push_back({posx++, posy});
             }
         }
         posx = position.x - 1;
@@ -282,10 +285,10 @@ namespace chess {
             if ((b[posx][posy] & 0xC0) == comp) {
                 break;
             } else if (b[posx][posy] > 0) {
-                valid_moves.push_back({posx, posy});
+                v.push_back({posx, posy});
                 break;
             } else {
-                valid_moves.push_back({posx--, posy});
+                v.push_back({posx--, posy});
             }
         }
         posx = position.x;
@@ -294,10 +297,10 @@ namespace chess {
             if ((b[posx][posy] & 0xC0) == comp) {
                 break;
             } else if (b[posx][posy] > 0) {
-                valid_moves.push_back({posx, posy});
+                v.push_back({posx, posy});
                 break;
             } else {
-                valid_moves.push_back({posx, posy++});
+                v.push_back({posx, posy++});
             }
         }
         posx = position.x;
@@ -306,15 +309,15 @@ namespace chess {
             if ((b[posx][posy] & 0xC0) == comp) {
                 break;
             } else if (b[posx][posy] > 0) {
-                valid_moves.push_back({posx, posy});
+                v.push_back({posx, posy});
                 break;
             } else {
-                valid_moves.push_back({posx, posy--});
+                v.push_back({posx, posy--});
             }
         }
     }
     
-    void King :: check_moves (void) {
+    void King :: check_moves (std::vector<pos>& v, bool t) {
         
         int8_t posx = position.x + 1;
         int8_t posy = position.y + 1;
@@ -325,49 +328,49 @@ namespace chess {
         // UP-RIGHT
         if (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
             if ((b[posx][posy] & 0xC0) != comp) {
-                valid_moves.push_back({posx, posy});
+                v.push_back({posx, posy});
             }
         }
         // UP
         if (--posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
             if ((b[posx][posy] & 0xC0) != comp) {
-                valid_moves.push_back({posx, posy});
+                v.push_back({posx, posy});
             }
         }
         // UP-LEFT
         if (--posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
             if ((b[posx][posy] & 0xC0) != comp) {
-                valid_moves.push_back({posx, posy});
+                v.push_back({posx, posy});
             }
         }
         // LEFT
         if (posx >= 0 and --posy >= 0 and posx < 8 and posy < 8) {
             if ((b[posx][posy] & 0xC0) != comp) {
-                valid_moves.push_back({posx, posy});
+                v.push_back({posx, posy});
             }
         }
         // DOWN-LEFT
         if (posx >= 0 and --posy >= 0 and posx < 8 and posy < 8) {
             if ((b[posx][posy] & 0xC0) != comp) {
-                valid_moves.push_back({posx, posy});
+                v.push_back({posx, posy});
             }
         }
         // DOWN
         if (++posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
             if ((b[posx][posy] & 0xC0) != comp) {
-                valid_moves.push_back({posx, posy});
+                v.push_back({posx, posy});
             }
         }
         // DOWN-RIGHT
         if (++posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
             if ((b[posx][posy] & 0xC0) != comp) {
-                valid_moves.push_back({posx, posy});
+                v.push_back({posx, posy});
             }
         }
         // RIGHT
         if (posx >= 0 and ++posy >= 0 and posx < 8 and posy < 8) {
             if ((b[posx][posy] & 0xC0) != comp) {
-                valid_moves.push_back({posx, posy});
+                v.push_back({posx, posy});
             }
         }
 //        for (const auto& move : valid_moves) { print_pos(move); }

@@ -12,6 +12,9 @@ namespace chess {
         int8_t x;
         int8_t y;
     };
+    bool operator==(const pos& p1, const pos& p2) {
+        return (p1.x == p2.x) and (p1.y == p2.y);
+    }
     
     /* Classes for the Game Pieces. Created by the Engine directly. */
     class Piece {
@@ -22,7 +25,7 @@ namespace chess {
         uint8_t check_gs (void) { return *pgs; }
         pos check_position (void) { return position; }
         void print_info (void);
-        virtual void check_moves (void) = 0; // pure polymorphic function
+        virtual void check_moves (std::vector<pos>& v, bool t=true) = 0; // pure polymorphic function
         virtual std::string get_type (void) = 0; // pure polymorphic function
         virtual uint8_t move (const pos p); // polymorphic, default for N, B, R, Q.
     protected:
@@ -36,9 +39,8 @@ namespace chess {
     
     class Pawn : public Piece {
     public:
-        using Piece :: Piece; // inherit constructor from Piece
-//        ~Pawn (void); // destructor
-        void check_moves (void);
+        using Piece :: Piece;
+        virtual void check_moves (std::vector<pos>& v, bool t=true);
         uint8_t move (const pos p);
         std::string get_type (void) { return "Pawn"; }
         void is_first_move (bool x) { first_move = x; }
@@ -51,8 +53,7 @@ namespace chess {
     class Knight : public Piece {
     public:
         using Piece :: Piece;
-//        ~Knight (void);
-        void check_moves (void);
+        void check_moves (std::vector<pos>& v, bool t=true);
         std::string get_type (void) { return "Knight"; }
     protected:
     private:
@@ -61,8 +62,7 @@ namespace chess {
     class Bishop : public Piece {
     public:
         using Piece :: Piece;
-//        ~Bishop (void);
-        void check_moves (void);
+        void check_moves (std::vector<pos>& v, bool t=true);
         std::string get_type (void) { return "Bishop"; }
     protected:
     private:
@@ -71,8 +71,7 @@ namespace chess {
     class Rook : public Piece {
     public:
         using Piece :: Piece;
-//        ~Rook (void);
-        void check_moves (void);
+        void check_moves (std::vector<pos>& v, bool t=true);
         std::string get_type (void) { return "Rook"; }
     protected:
     private:
@@ -81,8 +80,7 @@ namespace chess {
     class Queen : public Piece {
     public:
         using Piece :: Piece;
-//        ~Queen (void);
-        void check_moves (void);
+        void check_moves (std::vector<pos>& v, bool t=true);
         std::string get_type (void) { return "Queen"; }
     protected:
     private:
@@ -91,8 +89,7 @@ namespace chess {
     class King : public Piece {
     public:
         using Piece :: Piece;
-//        ~King (void);
-        void check_moves (void);
+        void check_moves (std::vector<pos>& v, bool t=true);
         uint8_t move (const pos p);
         std::string get_type (void) { return "King"; }
     protected:
@@ -116,8 +113,10 @@ namespace chess {
         ~GameEngine (void); // destructor
     protected:
     private:
-        bool is_white; // stores if the player White (1) or Black (0).
-        uint8_t** board; // 8 bit-flags per square.
+        // stores if the player White (1) or Black (0).
+        bool is_white;
+        // 8 bit-flags per square.
+        uint8_t** board;
         /**************************************************/
         /* if Bit0 HIGH - Pawn on this square.            */
         /* if Bit1 HIGH - Knight on this square.          */
@@ -128,7 +127,8 @@ namespace chess {
         /* if Bit6 HIGH - White Piece on this square.     */
         /* if Bit7 HIGH - Black Piece on this square.     */
         /**************************************************/
-        uint8_t game_status; // 8 bit-flags to check the status of the game.
+        // 8 bit-flags to check the status of the game
+        uint8_t game_status;
         /**************************************************/
         /* if Bit0 HIGH - Whites turn, else Blacks turn.  */
         /* if Bit1 HIGH - White won the game.             */
@@ -139,24 +139,30 @@ namespace chess {
         /* if Bit6 HIGH - Current player is in Checkmate. */
         /* if Bit7 HIGH - Game is in Stalemate.           */
         /**************************************************/
-//        std::vector<Piece*> white_pieces; // stores the white game pieces in a vector.
-//        std::vector<Piece*> black_pieces; // stores the black game pieces in a vector.
+        // Vectors to store the game pieces in.
         std::vector<PiecePtr> white_pieces;
         std::vector<PiecePtr> black_pieces;
-        /* Functions that create and place the pieces upon class construction */
+        // Vector to save the King's danger cells.
+        std::vector<pos> danger_cells;
+        // The Game is played in this function
+        void play_game (void);
+        // Functions that create and place the pieces upon class construction
         void place_pawns (const bool c, const int8_t r);
         void place_knights (const bool c, const int8_t r);
         void place_bishops (const bool c, const int8_t r);
         void place_rooks (const bool c, const int8_t r);
         void place_royals (const bool c, const int8_t r);
+        // Functions that interact with the Pieces
         bool move_piece (pos pfrom, pos pto);
-        void play_game (void);
-        void pbp (std::vector<PiecePtr>& v1, std::vector<PiecePtr>& v2, const PiecePtr& pp, const bool c) {
-            c ? v1.push_back(std::move(pp)) : v2.push_back(std::move(pp));
-        };
-        void print_board (void); // prints the current board
+        bool in_check (bool c);
+        
+        // Prints the current board
+        void print_board (void);
+        // One-Line Functions
         void print_pos (const pos p) { std::cout << static_cast<char>(p.x + 'A') << static_cast<int>(p.y + 1) << std::endl; }
-        pos char2int (const char* p) { return {static_cast<int8_t>(p[0] - 'A'), static_cast<int8_t>(p[1] - '1')}; } };
+        pos char2int (const char* p) { return {static_cast<int8_t>(p[0] - 'A'), static_cast<int8_t>(p[1] - '1')}; }
+        void pbp (std::vector<PiecePtr>& v1, std::vector<PiecePtr>& v2, const PiecePtr& pp, const bool c) { c ? v1.push_back(std::move(pp)) : v2.push_back(std::move(pp)); }
+    };
     /***********************************************************/
 }
 
