@@ -151,6 +151,9 @@ namespace chess {
         void place_royals (const bool c, const int8_t r);
         bool move_piece (pos pfrom, pos pto);
         void play_game (void);
+        void pbp (std::vector<PiecePtr>& v1, std::vector<PiecePtr>& v2, const PiecePtr& pp, const bool c) {
+            c ? v1.push_back(std::move(pp)) : v2.push_back(std::move(pp));
+        };
         void print_board (void); // prints the current board
         void print_pos (const pos p) { std::cout << static_cast<char>(p.x + 'A') << static_cast<int>(p.y + 1) << std::endl; }
         pos char2int (const char* p) { return {static_cast<int8_t>(p[0] - 'A'), static_cast<int8_t>(p[1] - '1')}; } };

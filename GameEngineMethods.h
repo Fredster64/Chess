@@ -67,6 +67,7 @@ namespace chess {
                 std::cin >> p;
                 pout = char2int(p);
                 if (move_piece (pin, pout)) {
+                    std::cout << "Piece completely moved." << std::endl;
                     print_board ();
                     allowed = true;
                     ((game_status & 0x01) > 0) ? game_status &= 0xFE : game_status |= 0x01; // toggles status bit 0.
@@ -93,48 +94,42 @@ namespace chess {
         for (int8_t i = 0; i < 8; ++i) {
             PawnPtr pawn (new Pawn (c, {i, r}, game_status, board));
             pawn->is_first_move(true);
-            c ? white_pieces.push_back(std::move(pawn)) : black_pieces.push_back(std::move(pawn));
+            pbp (white_pieces, black_pieces, pawn, c);
             board[i][r] |= c ? 0x41 : 0x81;
-            pawn = nullptr;
         }
     }
     
     void GameEngine :: place_knights (const bool c, const int8_t r) {
         for (int8_t i = 1; i < 8; i += 5) {
             KnightPtr knight (new Knight (c, {i, r}, game_status, board));
-            c ? white_pieces.push_back(std::move(knight)) : black_pieces.push_back(std::move(knight));
+            pbp (white_pieces, black_pieces, knight, c);
             board[i][r] |= c ? 0x42 : 0x82;
-            knight = nullptr;
         }
     }
     
     void GameEngine :: place_bishops (const bool c, const int8_t r) {
         for (int8_t i = 2; i < 8; i += 3) {
             BishopPtr bishop (new Bishop (c, {i, r}, game_status, board));
-            c ? white_pieces.push_back(std::move(bishop)) : black_pieces.push_back(std::move(bishop));
+            pbp (white_pieces, black_pieces, bishop, c);
             board[i][r] |= c ? 0x44 : 0x84;
-            bishop = nullptr;
         }
     }
     
     void GameEngine :: place_rooks (const bool c, const int8_t r) {
         for (int8_t i = 0; i < 8; i+=7) {
             RookPtr rook (new Rook (c, {i, r}, game_status, board));
-            c ? white_pieces.push_back(std::move(rook)) : black_pieces.push_back(std::move(rook));
+            pbp (white_pieces, black_pieces, rook, c);
             board[i][r] |= c ? 0x48 : 0x88;
-            rook = nullptr;
         }
     }
     
     void GameEngine :: place_royals (const bool c, const int8_t r) {
         QueenPtr queen (new Queen (c, {3, r}, game_status, board));
-        c ? white_pieces.push_back(std::move(queen)) : black_pieces.push_back(std::move(queen));
+        pbp (white_pieces, black_pieces, queen, c);
         board[3][r] |= c ? 0x50 : 0x90;
         KingPtr king (new King (c, {4, r}, game_status, board));
-        c ? white_pieces.push_back(std::move(king)) : black_pieces.push_back(std::move(king));
+        pbp (white_pieces, black_pieces, king, c);
         board[4][r] |= c ? 0x60 : 0xA0;
-        queen = nullptr;
-        king = nullptr;
     }
     
     bool GameEngine :: move_piece (pos pfrom, pos pto) {
@@ -142,48 +137,44 @@ namespace chess {
         uint8_t pr;
         for (const auto& piece : ((game_status & 0x1) > 0 ? white_pieces : black_pieces)) {
             pos temp = piece->check_position();
-            if ((pfrom.x == temp.x) and (pfrom.y == temp.y)) {
-                pr = piece->move(pto);
-                if ((pr & 0x01) > 0) r = true;
-                pr >>= 1;
-                if (pr > 0) { // promotion condition for pawns
-                    bool c = (game_status & 0x1) > 0;
-                    rm_dlt ((c ? white_pieces : black_pieces), pto); // delete the pawn
-                    switch (pr) {
-                        case 0x01: {
-                            board[pto.x][pto.y] = (c ? 0x42 : 0x82);
-                            KnightPtr knight (new Knight (is_white, pto, game_status, board));
-                            c ? white_pieces.push_back(std::move(knight)) : black_pieces.push_back(std::move(knight));
-                            knight = nullptr;
-                            break;
-                        }
-                        case 0x02: {
-                            board[pto.x][pto.y] = (c ? 0x44 : 0x84);
-                            BishopPtr bishop (new Bishop (is_white, pto, game_status, board));
-                            c ? white_pieces.push_back(std::move(bishop)) : black_pieces.push_back(std::move(bishop));
-                            bishop = nullptr;
-                            break;
-                        }
-                        case 0x04: {
-                            board[pto.x][pto.y] = (c ? 0x48 : 0x88);
-                            RookPtr rook (new Rook (is_white, pto, game_status, board));
-                            c ? white_pieces.push_back(std::move(rook)) : black_pieces.push_back(std::move(rook));
-                            rook = nullptr;
-                            break;
-                        }
-                        case 0x08: {
-                            board[pto.x][pto.y] = (c ? 0x50 : 0x90);
-                            QueenPtr queen (new Queen (is_white, pto, game_status, board));
-                            c ? white_pieces.push_back(std::move(queen)) : black_pieces.push_back(std::move(queen));
-                            queen = nullptr;
-                            break;
-                        }
-                    }
-                }
-            }
+            if ((pfrom.x == temp.x) and (pfrom.y == temp.y)) { pr = piece->move(pto); }
             piece->valid_moves.clear();
         }
-        rm_dlt (((game_status & 0x1) == 0 ? white_pieces : black_pieces), pto);
+        if ((pr & 0x01) > 0) { r = true; }
+        std::cout << static_cast<int>(r) << std::endl;
+        pr >>= 1;
+        if (pr > 0) { // promotion condition for pawns
+            bool c = (game_status & 0x1) > 0;
+            rm_dlt ((c ? white_pieces : black_pieces), pto); // delete the pawn
+            std::cout << "Got here" << std::endl;
+            switch (pr) {
+                case 0x01: {
+                    KnightPtr knight (new Knight (is_white, pto, game_status, board));
+                    board[pto.x][pto.y] = (c ? 0x42 : 0x82);
+                    pbp (white_pieces, black_pieces, knight, c);
+                    break;
+                }
+                case 0x02: {
+                    BishopPtr bishop (new Bishop (is_white, pto, game_status, board));
+                    board[pto.x][pto.y] = (c ? 0x44 : 0x84);
+                    pbp (white_pieces, black_pieces, bishop, c);
+                    break;
+                }
+                case 0x04: {
+                    RookPtr rook (new Rook (is_white, pto, game_status, board));
+                    board[pto.x][pto.y] = (c ? 0x48 : 0x88);
+                    pbp (white_pieces, black_pieces, rook, c);
+                    break;
+                }
+                case 0x08: {
+                    QueenPtr queen (new Queen (is_white, pto, game_status, board));
+                    board[pto.x][pto.y] = (c ? 0x50 : 0x90);
+                    pbp (white_pieces, black_pieces, queen, c);
+                    break;
+                }
+            }
+        }
+        rm_dlt (((game_status & 0x1) == 0 ? white_pieces : black_pieces), pto); // delete pieces of the opposite colour if taken
         return r;
     }
     
