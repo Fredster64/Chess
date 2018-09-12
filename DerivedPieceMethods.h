@@ -318,47 +318,62 @@ namespace chess {
         
         uint8_t comp = is_white ? 0x40 : 0x80;
         
-        // up-left, up-right, down-left, down-right, up, down, left, right
-        if (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) != comp) {
-                valid_moves.push_back({posx--, posy});
-            }
-        }
-        if (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) != comp) {
-                valid_moves.push_back({posx--, posy});
-            }
-        }
-        if (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) != comp) {
-                valid_moves.push_back({posx, posy--});
-            }
-        }
-        if (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) != comp) {
-                valid_moves.push_back({posx, posy--});
-            }
-        }
-        if (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) != comp) {
-                valid_moves.push_back({posx++, posy});
-            }
-        }
-        if (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) != comp) {
-                valid_moves.push_back({posx++, posy});
-            }
-        }
-        if (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) != comp) {
-                valid_moves.push_back({posx, posy++});
-            }
-        }
+        // UP-RIGHT
         if (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
             if ((b[posx][posy] & 0xC0) != comp) {
                 valid_moves.push_back({posx, posy});
             }
         }
+        // UP
+        --posx;
+        if (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
+            if ((b[posx][posy] & 0xC0) != comp) {
+                valid_moves.push_back({posx, posy});
+            }
+        }
+        // UP-LEFT
+        --posx;
+        if (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
+            if ((b[posx][posy] & 0xC0) != comp) {
+                valid_moves.push_back({posx, posy});
+            }
+        }
+        // LEFT
+        --posy;
+        if (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
+            if ((b[posx][posy] & 0xC0) != comp) {
+                valid_moves.push_back({posx, posy});
+            }
+        }
+        // DOWN-LEFT
+        --posy;
+        if (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
+            if ((b[posx][posy] & 0xC0) != comp) {
+                valid_moves.push_back({posx, posy});
+            }
+        }
+        // DOWN
+        ++posx;
+        if (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
+            if ((b[posx][posy] & 0xC0) != comp) {
+                valid_moves.push_back({posx, posy});
+            }
+        }
+        // DOWN-RIGHT
+        ++posx;
+        if (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
+            if ((b[posx][posy] & 0xC0) != comp) {
+                valid_moves.push_back({posx, posy});
+            }
+        }
+        // RIGHT
+        ++posy;
+        if (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
+            if ((b[posx][posy] & 0xC0) != comp) {
+                valid_moves.push_back({posx, posy});
+            }
+        }
+//        for (const auto& move : valid_moves) { print_pos(move); }
     }
     
     bool Pawn :: move (pos p) {

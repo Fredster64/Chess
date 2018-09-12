@@ -26,7 +26,6 @@ namespace chess {
         virtual bool move (const pos p); // polymorphic, default for N, B, R, Q.
     protected:
         bool is_white; // stores if the piece is White (1) or Black (0).
-        bool is_taken;
         pos position; // the x-y position of the piece.
         uint8_t* pgs; // *pgs = game_status, pgs = &game_status.
         uint8_t*** pgb; // *pbg = board, pbg = &board.
