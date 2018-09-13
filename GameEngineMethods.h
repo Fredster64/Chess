@@ -189,8 +189,10 @@ namespace chess {
         // search for the King's cell
         for (int8_t j = 0; j < 8; ++j) {
             for (int8_t i = 0; i < 8; ++i) {
-                if (board[i][j] == k_score) { k_pos = {i, j}; }
-                break;
+                if ((board[i][j] & k_score) == k_score) {
+                    k_pos = {i, j};
+                    break;
+                }
             }
         }
         // look for all cells that can be attacked by the opponent
