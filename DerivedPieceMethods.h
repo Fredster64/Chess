@@ -45,7 +45,7 @@ namespace chess {
     
     void Knight :: check_moves (std::vector<pos>& v, bool t) {
         const pos p = position;
-        pos L[8] = {{2, 1}, {-2, 1}, {1, 2}, {-1, 2}};
+        pos L[4] = {{2, 1}, {-2, 1}, {1, 2}, {-1, 2}};
         uint8_t** b = *pgb; // put the game board array in the current scope
         uint8_t comp = is_white ? 0x40 : 0x80;
         // L-shapes: -2x-1y ; -2x+1y ; -1x-2y ; -1x+2y ; +1x-2y ; +1x+2y ; +2x-1y ; +2x+1y
