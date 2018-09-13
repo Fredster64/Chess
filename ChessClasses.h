@@ -28,7 +28,7 @@ namespace chess {
     /* Putting all the movement-checking in one place.
        no need for polymorphism, and less repetition of code */
     struct MoveCheckInterface {
-        void check_moves (std::vector<pos>& v, bool t=true, std::string pieceType); // Handles movement of all pieces
+        void check_moves (std::vector<pos>& v, bool t=true, std::string pieceType, pos startPos); // Handles movement of all pieces
     };    
     
     /* Classes for the Game Pieces. Created by the Engine directly. */
