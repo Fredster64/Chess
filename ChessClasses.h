@@ -170,8 +170,8 @@ namespace chess {
         void print_pos (const pos p) { std::cout << static_cast<char>(p.x + 'A') << static_cast<int>(p.y + 1) << std::endl; }
         pos char2int (const char* p) { return {static_cast<int8_t>(p[0] - 'A'), static_cast<int8_t>(p[1] - '1')}; }
         void pbp (std::vector<PiecePtr>& v1, std::vector<PiecePtr>& v2, const PiecePtr& pp, const bool c) { c ? v1.push_back(std::move(pp)) : v2.push_back(std::move(pp)); }
-        void rm_dlt (std::vector<chess::PiecePtr>& v, const chess::pos p2) {
-            v.erase (std::remove_if (v.begin(), v.end(), [p2] (chess::PiecePtr piece) -> bool {
+        void rm_dlt (std::vector<PiecePtr>& v, const pos p2) {
+            v.erase (std::remove_if (v.begin(), v.end(), [p2] (PiecePtr piece) -> bool {
                 chess::pos p = piece->check_position();
                 if (p == p2) return true;
                 return false;
