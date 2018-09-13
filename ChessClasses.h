@@ -143,8 +143,8 @@ namespace chess {
         /* if Bit0 HIGH - Whites turn, else Blacks turn.  */
         /* if Bit1 HIGH - White won the game.             */
         /* if Bit2 HIGH - Black won the game.             */
-        /* if Bit3 HIGH - White Pawn to be promoted.      */
-        /* if Bit4 HIGH - Black Pawn to be promoted.      */
+        /* if Bit3 HIGH - Unassigned                      */
+        /* if Bit4 HIGH - Unassigned                      */
         /* if Bit5 HIGH - Current player is in Check.     */
         /* if Bit6 HIGH - Current player is in Checkmate. */
         /* if Bit7 HIGH - Game is in Stalemate.           */
