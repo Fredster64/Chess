@@ -27,6 +27,7 @@ namespace chess {
             colour ? --row : ++row;
             place_knights (colour, row);
             place_bishops (colour, row);
+            
             place_rooks (colour, row);
             place_royals (colour, row);
             colour = !colour;
@@ -143,24 +144,24 @@ namespace chess {
         pr >>= 1;
         if (pr > 0) { // promotion condition for pawns
             bool c = (game_status & 0x1) > 0;
-            rm_dlt ((c ? white_pieces : black_pieces), pto); // delete the pawn
+            this->rm_dlt ((c ? white_pieces : black_pieces), pto); // delete the pawn
             switch (pr) {
                 case 0x01: {
                     KnightPtr knight (new Knight (is_white, pto, game_status, board));
                     board[pto.x][pto.y] = (c ? 0x42 : 0x82);
-                    pbp (white_pieces, black_pieces, knight, c);
+                    this->pbp (white_pieces, black_pieces, knight, c);
                     break;
                 }
                 case 0x02: {
                     BishopPtr bishop (new Bishop (is_white, pto, game_status, board));
                     board[pto.x][pto.y] = (c ? 0x44 : 0x84);
-                    pbp (white_pieces, black_pieces, bishop, c);
+                    this->pbp (white_pieces, black_pieces, bishop, c);
                     break;
                 }
                 case 0x04: {
                     RookPtr rook (new Rook (is_white, pto, game_status, board));
                     board[pto.x][pto.y] = (c ? 0x48 : 0x88);
-                    pbp (white_pieces, black_pieces, rook, c);
+                    this->pbp (white_pieces, black_pieces, rook, c);
                     break;
                 }
                 case 0x08: {
@@ -171,7 +172,8 @@ namespace chess {
                 }
             }
         }
-        rm_dlt (((game_status & 0x1) == 0 ? white_pieces : black_pieces), pto); // delete pieces of the opposite colour if taken
+        // delete pieces of the opposite colour if taken
+        this->rm_dlt (((game_status & 0x1) == 0 ? white_pieces : black_pieces), pto);
         return r;
     }
     

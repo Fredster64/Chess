@@ -12,8 +12,17 @@ namespace chess {
         int8_t x;
         int8_t y;
     };
-    bool operator==(const pos& p1, const pos& p2) {
+    bool operator==(const pos& p1, const pos& p2) { // define pos equality
         return (p1.x == p2.x) and (p1.y == p2.y);
+    }
+    bool operator!=(const pos& p1, const pos& p2) { // define pos inequality
+        return (p1.x != p2.x) or (p1.y != p2.y);
+    }
+    pos operator+(const pos& p1, const pos& p2) { // define pos addition
+        return {static_cast<int8_t>(p1.x + p2.x), static_cast<int8_t>(p1.y + p2.y)};
+    }
+    pos operator-(const pos& p1, const pos& p2) { // define pos subtraction
+        return {static_cast<int8_t>(p1.x - p2.x), static_cast<int8_t>(p1.y - p2.y)};
     }
     
     /* Classes for the Game Pieces. Created by the Engine directly. */

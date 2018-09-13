@@ -44,59 +44,41 @@ namespace chess {
     }
     
     void Knight :: check_moves (std::vector<pos>& v, bool t) {
-        const int8_t posx = position.x;
-        const int8_t posy = position.y;
+        const pos p = position;
+        pos L[8] = {{2, 1}, {-2, 1}, {1, 2}, {-1, 2}};
         uint8_t** b = *pgb; // put the game board array in the current scope
-        
         uint8_t comp = is_white ? 0x40 : 0x80;
-        
         // L-shapes: -2x-1y ; -2x+1y ; -1x-2y ; -1x+2y ; +1x-2y ; +1x+2y ; +2x-1y ; +2x+1y
-        if (posx > 1) {
-            if (posy > 0) {
-                if ((b[posx - 2][posy - 1] & 0xC0) != comp) {
-                    v.push_back({static_cast<int8_t>(posx - 2), static_cast<int8_t>(posy - 1)});
-                }
+        if (p.x > 1) {
+            if (p.y > 0) {
+                if ((b[p.x - 2][p.y - 1] & 0xC0) != comp) v.push_back(p - L[0]);
             }
-            if (posy < 7) {
-                if ((b[posx - 2][posy + 1] & 0xC0) != comp) {
-                    v.push_back({static_cast<int8_t>(posx - 2), static_cast<int8_t>(posy + 1)});
-                }
+            if (p.y < 7) {
+                if ((b[p.x - 2][p.y + 1] & 0xC0) != comp) v.push_back(p + L[1]);
             }
         }
-        if (posx > 0) {
-            if (posy > 1) {
-                if ((b[posx - 1][posy - 2] & 0xC0) != comp) {
-                    v.push_back({static_cast<int8_t>(posx - 1), static_cast<int8_t>(posy - 2)});
-                }
+        if (p.x > 0) {
+            if (p.y > 1) {
+                if ((b[p.x - 1][p.y - 2] & 0xC0) != comp) v.push_back(p - L[2]);
             }
-            if (posy < 6) {
-                if ((b[posx - 1][posy + 2] & 0xC0) != comp) {
-                    v.push_back({static_cast<int8_t>(posx - 1), static_cast<int8_t>(posy + 2)});
-                }
+            if (p.y < 6) {
+                if ((b[p.x - 1][p.y + 2] & 0xC0) != comp) v.push_back(p + L[3]);
             }
         }
-        if (posx < 6) {
-            if (posy > 0) {
-                if ((b[posx + 2][posy - 1] & 0xC0) != comp) {
-                    v.push_back({static_cast<int8_t>(posx + 2), static_cast<int8_t>(posy - 1)});
-                }
+        if (p.x < 6) {
+            if (p.y > 0) {
+                if ((b[p.x + 2][p.y - 1] & 0xC0) != comp) v.push_back(p - L[1]);
             }
-            if (posy < 7) {
-                if ((b[posx + 2][posy + 1] & 0xC0) != comp) {
-                    v.push_back({static_cast<int8_t>(posx + 2), static_cast<int8_t>(posy + 1)});
-                }
+            if (p.y < 7) {
+                if ((b[p.x + 2][p.y + 1] & 0xC0) != comp) v.push_back(p + L[0]);
             }
         }
-        if (posx < 7) {
-            if (posy > 1) {
-                if ((b[posx + 1][posy - 2] & 0xC0) != comp) {
-                    v.push_back({static_cast<int8_t>(posx + 1), static_cast<int8_t>(posy - 2)});
-                }
+        if (p.x < 7) {
+            if (p.y > 1) {
+                if ((b[p.x + 1][p.y - 2] & 0xC0) != comp) v.push_back(p - L[3]);
             }
-            if (posy < 6) {
-                if ((b[posx + 1][posy + 2] & 0xC0) != comp) {
-                    v.push_back({static_cast<int8_t>(posx + 1), static_cast<int8_t>(posy + 2)});
-                }
+            if (p.y < 6) {
+                if ((b[p.x + 1][p.y + 2] & 0xC0) != comp) v.push_back(p + L[2]);
             }
         }
     }
@@ -381,7 +363,7 @@ namespace chess {
         uint8_t** b = *pgb;
         uint8_t valid = 0;
         for (const auto& m : valid_moves) {
-            if (m.x == p.x and m.y == p.y) {
+            if (m == p) {
                 valid = 1;
                 break;
             }
@@ -405,7 +387,7 @@ namespace chess {
         uint8_t** b = *pgb;
         uint8_t valid = 0;
         for (const auto& m : valid_moves) {
-            if (m.x == p.x and m.y == p.y) {
+            if (m == p) {
                 valid = 1;
                 break;
             }
