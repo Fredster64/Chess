@@ -31,7 +31,7 @@ namespace chess {
         uint8_t** b = *pgb;
         uint8_t valid = 0;
         for (const auto& m : valid_moves) {
-            if (m.x == p.x and m.y == p.y) {
+            if (m == p) {
                 valid = 1;
                 break;
             }

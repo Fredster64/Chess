@@ -7,6 +7,8 @@
 
 template <typename T>
 bool vec_search (const std::vector<T>& v, const T item);
+template <typename T>
+void rm_dupes (std::vector<T>& v);
 
 /*******************************************************/
 
@@ -22,6 +24,17 @@ bool vec_search (const std::vector<T>& v, const T item) {
         if (it == item) return true;
     }
     return false;
+}
+template <typename T>
+void rm_dupes (std::vector<T>& v) {
+    for (int8_t i = v.size() - 1; i >= 0; --i) {
+        for (int8_t j = i - 1; j >= 0; --j) {
+            if (v[i] == v[j]) {
+                v.erase(v.begin() + i);
+                break;
+            }
+        }
+    }
 }
 
 /********************************************************/

@@ -5,12 +5,14 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include <algorithm>
 
 namespace chess {
     
     struct pos {
         int8_t x;
         int8_t y;
+        void print_pos (void) { std::cout << static_cast<char>(x + 'A') << static_cast<int>(y + 1) << std::endl; }
     };
     bool operator==(const pos& p1, const pos& p2) { // define pos equality
         return (p1.x == p2.x) and (p1.y == p2.y);
@@ -42,7 +44,6 @@ namespace chess {
         pos position; // the x-y position of the piece.
         uint8_t* pgs; // *pgs = game_status, pgs = &game_status.
         uint8_t*** pgb; // *pbg = board, pbg = &board.
-        void print_pos (const pos p) { std::cout << static_cast<char>(p.x + 'A') << static_cast<int>(p.y + 1) << std::endl; }
     private:
     };
     
@@ -151,8 +152,6 @@ namespace chess {
         // Vectors to store the game pieces in.
         std::vector<PiecePtr> white_pieces;
         std::vector<PiecePtr> black_pieces;
-        // Vector to save the King's danger cells.
-        std::vector<pos> danger_cells;
         // The Game is played in this function
         void play_game (void);
         // Functions that create and place the pieces upon class construction
@@ -167,7 +166,6 @@ namespace chess {
         // Prints the current board
         void print_board (void);
         // One-Line Functions
-        void print_pos (const pos p) { std::cout << static_cast<char>(p.x + 'A') << static_cast<int>(p.y + 1) << std::endl; }
         pos char2int (const char* p) { return {static_cast<int8_t>(p[0] - 'A'), static_cast<int8_t>(p[1] - '1')}; }
         void pbp (std::vector<PiecePtr>& v1, std::vector<PiecePtr>& v2, const PiecePtr& pp, const bool c) { c ? v1.push_back(std::move(pp)) : v2.push_back(std::move(pp)); }
         void rm_dlt (std::vector<PiecePtr>& v, const pos p2) {
