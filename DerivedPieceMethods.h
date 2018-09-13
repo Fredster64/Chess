@@ -14,6 +14,10 @@ namespace chess {
         int8_t posy = position.y;
         uint8_t** b = *pgb; // put the game board array in the current scope
         
+        // TODO : Modify so that Pawns cannot take the King.
+        //        If King is in Check must only be able to move to remove King from check condition
+        
+        
         // will work on 'check' case conditions and en-passant rules later.
         is_white ? ++posy : --posy;
         
@@ -48,6 +52,14 @@ namespace chess {
         pos L[4] = {{2, 1}, {-2, 1}, {1, 2}, {-1, 2}};
         uint8_t** b = *pgb; // put the game board array in the current scope
         uint8_t comp = is_white ? 0x40 : 0x80;
+        
+        // TODO : Modify so that Knights cannot take the King.
+        //        If King is in Check must only be able to move to remove King from check condition
+        
+        
+        
+        
+        
         // L-shapes: -2x-1y ; -2x+1y ; -1x-2y ; -1x+2y ; +1x-2y ; +1x+2y ; +2x-1y ; +2x+1y
         if (p.x > 1) {
             if (p.y > 0) {
@@ -89,6 +101,10 @@ namespace chess {
         uint8_t** b = *pgb; // put the game board array in the current scope
         
         uint8_t comp = is_white ? 0x40 : 0x80;
+        
+        // TODO : Modify so that Bishops cannot take the King.
+        //        If King is in Check must only be able to move to remove King from check condition
+        
         
         // up-left, up-right, down-left, down-right
         while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
@@ -146,6 +162,9 @@ namespace chess {
         
         uint8_t comp = is_white ? 0x40 : 0x80;
         
+        // TODO : Modify so that Rooks cannot take the King.
+        //        If King is in Check must only be able to move to remove King from check condition
+        
         // up, down, left, right
         while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
             if ((b[posx][posy] & 0xC0) == comp) {
@@ -201,6 +220,9 @@ namespace chess {
         uint8_t** b = *pgb; // put the game board array in the current scope
         
         uint8_t comp = is_white ? 0x40 : 0x80;
+        
+        // TODO : Modify so that Queens cannot take the King.
+        //        If King is in Check must only be able to move to remove King from check condition
         
         // up-left, up-right, down-left, down-right, up, down, left, right
         while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
@@ -304,6 +326,9 @@ namespace chess {
         int8_t posx = position.x + 1;
         int8_t posy = position.y + 1;
         uint8_t** b = *pgb; // put the game board array in the current scope
+        
+        // TODO : Modify so that the King cannot move into 'Check' squares.
+        //        Modify so that castling can be added.
         
         uint8_t comp = is_white ? 0x40 : 0x80;
         
