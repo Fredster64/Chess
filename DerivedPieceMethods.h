@@ -23,16 +23,16 @@ namespace chess {
         
         // If t=true (default) : If the piece is white, then the comparison is for black pieces and v.v. If a oppositely coloured piece is in an upper diagonal square then the piece can be taken.
         
-        // If t=false ("check" case): , The comparison is for either a empty cell OR a cell with the oppositely coloured king present.
+        // If t=false ("check" case): evaluate only upper diagonal squares.
         
-        uint8_t comp = t ? (is_white ? 0x80 : 0x40) : 0;
+        uint8_t comp = is_white ? 0x80 : 0x40;
         if (posx < 7) {
-            if (((b[posx + 1][posy] & 0xC0) == comp) or (!t and ((b[posx + 1][posy] & 0x20) == 0x20))) {
+            if (((b[posx + 1][posy] & 0xC0) == comp) or (!t)) {
                 v.push_back({(++posx)--, posy});
             }
         }
         if (posx > 0) {
-            if (((b[posx - 1][posy] & 0xC0) == comp) or (!t and ((b[posx - 1][posy] & 0x20) == 0x20))) {
+            if (((b[posx - 1][posy] & 0xC0) == comp) or (!t)) {
                 v.push_back({(--posx)++, posy});
             }
         }
@@ -56,39 +56,54 @@ namespace chess {
         pos L[4] = {{2, 1}, {-2, 1}, {1, 2}, {-1, 2}};
         uint8_t** b = *pgb; // put the game board array in the current scope
         uint8_t comp = is_white ? 0x40 : 0x80;
-        // for Knights, the optional parameter t is not used.
         
         // L-shapes: -2x-1y ; -2x+1y ; -1x-2y ; -1x+2y ; +1x-2y ; +1x+2y ; +2x-1y ; +2x+1y
         if (p.x > 1) {
             if (p.y > 0) {
-                if ((b[p.x - 2][p.y - 1] & 0xC0) != comp) v.push_back(p - L[0]);
+                if (((b[p.x - 2][p.y - 1] & 0xC0) != comp) or (!t)) {
+                    v.push_back(p - L[0]);
+                }
             }
             if (p.y < 7) {
-                if ((b[p.x - 2][p.y + 1] & 0xC0) != comp) v.push_back(p + L[1]);
+                if (((b[p.x - 2][p.y + 1] & 0xC0) != comp) or (!t)) {
+                    v.push_back(p + L[1]);
+                }
             }
         }
         if (p.x > 0) {
             if (p.y > 1) {
-                if ((b[p.x - 1][p.y - 2] & 0xC0) != comp) v.push_back(p - L[2]);
+                if (((b[p.x - 1][p.y - 2] & 0xC0) != comp) or (!t)) {
+                    v.push_back(p - L[2]);
+                }
             }
             if (p.y < 6) {
-                if ((b[p.x - 1][p.y + 2] & 0xC0) != comp) v.push_back(p + L[3]);
+                if (((b[p.x - 1][p.y + 2] & 0xC0) != comp) or (!t)) {
+                    v.push_back(p + L[3]);
+                }
             }
         }
         if (p.x < 6) {
             if (p.y > 0) {
-                if ((b[p.x + 2][p.y - 1] & 0xC0) != comp) v.push_back(p - L[1]);
+                if (((b[p.x + 2][p.y - 1] & 0xC0) != comp) or (!t)) {
+                    v.push_back(p - L[1]);
+                }
             }
             if (p.y < 7) {
-                if ((b[p.x + 2][p.y + 1] & 0xC0) != comp) v.push_back(p + L[0]);
+                if (((b[p.x + 2][p.y + 1] & 0xC0) != comp) or (!t)) {
+                    v.push_back(p + L[0]);
+                }
             }
         }
         if (p.x < 7) {
             if (p.y > 1) {
-                if ((b[p.x + 1][p.y - 2] & 0xC0) != comp) v.push_back(p - L[3]);
+                if (((b[p.x + 1][p.y - 2] & 0xC0) != comp) or (!t)) {
+                    v.push_back(p - L[3]);
+                }
             }
             if (p.y < 6) {
-                if ((b[p.x + 1][p.y + 2] & 0xC0) != comp) v.push_back(p + L[2]);
+                if (((b[p.x + 1][p.y + 2] & 0xC0) != comp) or (!t)) {
+                    v.push_back(p + L[2]);
+                }
             }
         }
     }
@@ -98,13 +113,12 @@ namespace chess {
         int8_t posy = position.y + 1;
         uint8_t** b = *pgb; // put the game board array in the current scope
         
-        // if t=false, we need to include any pieces of the opposite colour that are 'threatened'.
-        
         uint8_t comp = is_white ? 0x40 : 0x80;
         
         // up-left, up-right, down-left, down-right
         while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
             if ((b[posx][posy] & 0xC0) == comp) {
+                if (!t) v.push_back({posx, posy});
                 break;
             } else if (b[posx][posy] > 0) {
                 v.push_back({posx, posy});
@@ -117,6 +131,7 @@ namespace chess {
         posy = position.y - 1;
         while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
             if ((b[posx][posy] & 0xC0) == comp) {
+                if (!t) v.push_back({posx, posy});
                 break;
             } else if (b[posx][posy] > 0) {
                 v.push_back({posx, posy});
@@ -129,6 +144,7 @@ namespace chess {
         posy = position.y + 1;
         while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
             if ((b[posx][posy] & 0xC0) == comp) {
+                if (!t) v.push_back({posx, posy});
                 break;
             } else if (b[posx][posy] > 0) {
                 v.push_back({posx, posy});
@@ -141,6 +157,7 @@ namespace chess {
         posy = position.y - 1;
         while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
             if ((b[posx][posy] & 0xC0) == comp) {
+                if (!t) v.push_back({posx, posy});
                 break;
             } else if (b[posx][posy] > 0) {
                 v.push_back({posx, posy});
@@ -163,6 +180,7 @@ namespace chess {
         // up, down, left, right
         while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
             if ((b[posx][posy] & 0xC0) == comp) {
+                if (!t) v.push_back({posx, posy});
                 break;
             } else if (b[posx][posy] > 0) {
                 v.push_back({posx, posy});
@@ -175,6 +193,7 @@ namespace chess {
         posy = position.y;
         while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
             if ((b[posx][posy] & 0xC0) == comp) {
+                if (!t) v.push_back({posx, posy});
                 break;
             } else if (b[posx][posy] > 0) {
                 v.push_back({posx, posy});
@@ -187,6 +206,7 @@ namespace chess {
         posy = position.y + 1;
         while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
             if ((b[posx][posy] & 0xC0) == comp) {
+                if (!t) v.push_back({posx, posy});
                 break;
             } else if (b[posx][posy] > 0) {
                 v.push_back({posx, posy});
@@ -199,6 +219,7 @@ namespace chess {
         posy = position.y - 1;
         while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
             if ((b[posx][posy] & 0xC0) == comp) {
+                if (!t) v.push_back({posx, posy});
                 break;
             } else if (b[posx][posy] > 0) {
                 v.push_back({posx, posy});
@@ -216,11 +237,10 @@ namespace chess {
         
         uint8_t comp = is_white ? 0x40 : 0x80;
         
-        // if t=false, we need to include any pieces of the opposite colour that are 'threatened'.
-        
         // up-left, up-right, down-left, down-right, up, down, left, right
         while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
             if ((b[posx][posy] & 0xC0) == comp) {
+                if (!t) v.push_back({posx, posy});
                 break;
             } else if (b[posx][posy] > 0) {
                 v.push_back({posx, posy});
@@ -233,6 +253,7 @@ namespace chess {
         posy = position.y - 1;
         while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
             if ((b[posx][posy] & 0xC0) == comp) {
+                if (!t) v.push_back({posx, posy});
                 break;
             } else if (b[posx][posy] > 0) {
                 v.push_back({posx, posy});
@@ -245,6 +266,7 @@ namespace chess {
         posy = position.y + 1;
         while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
             if ((b[posx][posy] & 0xC0) == comp) {
+                if (!t) v.push_back({posx, posy});
                 break;
             } else if (b[posx][posy] > 0) {
                 v.push_back({posx, posy});
@@ -257,6 +279,7 @@ namespace chess {
         posy = position.y - 1;
         while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
             if ((b[posx][posy] & 0xC0) == comp) {
+                if (!t) v.push_back({posx, posy});
                 break;
             } else if (b[posx][posy] > 0) {
                 v.push_back({posx, posy});
@@ -269,6 +292,7 @@ namespace chess {
         posy = position.y;
         while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
             if ((b[posx][posy] & 0xC0) == comp) {
+                if (!t) v.push_back({posx, posy});
                 break;
             } else if (b[posx][posy] > 0) {
                 v.push_back({posx, posy});
@@ -281,6 +305,7 @@ namespace chess {
         posy = position.y;
         while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
             if ((b[posx][posy] & 0xC0) == comp) {
+                if (!t) v.push_back({posx, posy});
                 break;
             } else if (b[posx][posy] > 0) {
                 v.push_back({posx, posy});
@@ -293,6 +318,7 @@ namespace chess {
         posy = position.y + 1;
         while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
             if ((b[posx][posy] & 0xC0) == comp) {
+                if (!t) v.push_back({posx, posy});
                 break;
             } else if (b[posx][posy] > 0) {
                 v.push_back({posx, posy});
@@ -305,6 +331,7 @@ namespace chess {
         posy = position.y - 1;
         while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
             if ((b[posx][posy] & 0xC0) == comp) {
+                if (!t) v.push_back({posx, posy});
                 break;
             } else if (b[posx][posy] > 0) {
                 v.push_back({posx, posy});
@@ -321,55 +348,53 @@ namespace chess {
         int8_t posy = position.y + 1;
         uint8_t** b = *pgb; // put the game board array in the current scope
         
-        // for the King, the optional parameter t is not used.
-        
         uint8_t comp = is_white ? 0x40 : 0x80;
         
         // UP-RIGHT
         if (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) != comp) {
+            if (((b[posx][posy] & 0xC0) != comp) or (!t)) {
                 v.push_back({posx, posy});
             }
         }
         // UP
         if (--posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) != comp) {
+            if (((b[posx][posy] & 0xC0) != comp) or (!t)) {
                 v.push_back({posx, posy});
             }
         }
         // UP-LEFT
         if (--posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) != comp) {
+            if (((b[posx][posy] & 0xC0) != comp) or (!t)) {
                 v.push_back({posx, posy});
             }
         }
         // LEFT
         if (posx >= 0 and --posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) != comp) {
+            if (((b[posx][posy] & 0xC0) != comp) or (!t)) {
                 v.push_back({posx, posy});
             }
         }
         // DOWN-LEFT
         if (posx >= 0 and --posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) != comp) {
+            if (((b[posx][posy] & 0xC0) != comp) or (!t)) {
                 v.push_back({posx, posy});
             }
         }
         // DOWN
         if (++posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) != comp) {
+            if (((b[posx][posy] & 0xC0) != comp) or (!t)) {
                 v.push_back({posx, posy});
             }
         }
         // DOWN-RIGHT
         if (++posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) != comp) {
+            if (((b[posx][posy] & 0xC0) != comp) or (!t)) {
                 v.push_back({posx, posy});
             }
         }
         // RIGHT
         if (posx >= 0 and ++posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) != comp) {
+            if (((b[posx][posy] & 0xC0) != comp) or (!t)) {
                 v.push_back({posx, posy});
             }
         }
