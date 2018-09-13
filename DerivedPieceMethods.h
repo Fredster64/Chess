@@ -98,6 +98,8 @@ namespace chess {
         int8_t posy = position.y + 1;
         uint8_t** b = *pgb; // put the game board array in the current scope
         
+        // if t=false, we need to include any pieces of the opposite colour that are 'threatened'.
+        
         uint8_t comp = is_white ? 0x40 : 0x80;
         
         // up-left, up-right, down-left, down-right
@@ -156,6 +158,8 @@ namespace chess {
         
         uint8_t comp = is_white ? 0x40 : 0x80;
         
+        // if t=false, we need to include any pieces of the opposite colour that are 'threatened'.
+        
         // up, down, left, right
         while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
             if ((b[posx][posy] & 0xC0) == comp) {
@@ -212,6 +216,7 @@ namespace chess {
         
         uint8_t comp = is_white ? 0x40 : 0x80;
         
+        // if t=false, we need to include any pieces of the opposite colour that are 'threatened'.
         
         // up-left, up-right, down-left, down-right, up, down, left, right
         while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
@@ -315,6 +320,8 @@ namespace chess {
         int8_t posx = position.x + 1;
         int8_t posy = position.y + 1;
         uint8_t** b = *pgb; // put the game board array in the current scope
+        
+        // for the King, the optional parameter t is not used.
         
         uint8_t comp = is_white ? 0x40 : 0x80;
         
