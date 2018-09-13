@@ -18,15 +18,13 @@ namespace chess {
         is_white ? ++posy : --posy;
         
         uint8_t comp = is_white ? 0x80 : 0x40;
-        uint8_t is_king = t ? 0xE0 : 0xC0;
-        
         if (posx < 7) {
-            if ((b[posx + 1][posy] & is_king) == comp) {
+            if ((b[posx + 1][posy] & 0xC0) == comp) {
                 v.push_back({(++posx)--, posy});
             }
         }
         if (posx > 0) {
-            if ((b[posx - 1][posy] & is_king) == comp) {
+            if ((b[posx - 1][posy] & 0xC0) == comp) {
                 v.push_back({(--posx)++, posy});
             }
         }
