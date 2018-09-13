@@ -25,6 +25,12 @@ namespace chess {
         return {static_cast<int8_t>(p1.x - p2.x), static_cast<int8_t>(p1.y - p2.y)};
     }
     
+    /* Putting all the movement-checking in one place.
+       no need for polymorphism, and less repetition of code */
+    struct MoveCheckInterface {
+        void check_moves (std::vector<pos>& v, bool t=true, std::string pieceType); // Handles movement of all pieces
+    };    
+    
     /* Classes for the Game Pieces. Created by the Engine directly. */
     class Piece {
     public:
@@ -34,7 +40,7 @@ namespace chess {
         uint8_t check_gs (void) { return *pgs; }
         pos check_position (void) { return position; }
         void print_info (void);
-        virtual void check_moves (std::vector<pos>& v, bool t=true) = 0; // pure polymorphic function
+        void check_moves (std::vector<pos>& v, bool t=true) = 0; // pure polymorphic function
         virtual std::string get_type (void) = 0; // pure polymorphic function
         virtual uint8_t move (const pos p); // polymorphic, default for N, B, R, Q.
     protected:
@@ -44,6 +50,8 @@ namespace chess {
         uint8_t*** pgb; // *pbg = board, pbg = &board.
         void print_pos (const pos p) { std::cout << static_cast<char>(p.x + 'A') << static_cast<int>(p.y + 1) << std::endl; }
     private:
+        // Implementing a moveChecker interface to control piece movement 
+        MoveCheckInterface moveChecker;
     };
     
     class Pawn : public Piece {
