@@ -17,14 +17,22 @@ namespace chess {
         // will work on 'check' case conditions and en-passant rules later.
         is_white ? ++posy : --posy;
         
+        // 0xC0 : Either a black piece or a white piece present
+        
+        // 0x20 : A King is present
+        
+        // If t=true (default) : If the piece is white, then the comparison is for black pieces and v.v. If a oppositely coloured piece is in an upper diagonal square then the piece can be taken.
+        
+        // If t=false ("check" case): , The comparison is for either a empty cell OR a cell with the oppositely coloured king present.
+        
         uint8_t comp = t ? (is_white ? 0x80 : 0x40) : 0;
         if (posx < 7) {
-            if ((b[posx + 1][posy] & 0xC0) == comp) {
+            if (((b[posx + 1][posy] & 0xC0) == comp) or (!t and ((b[posx + 1][posy] & 0x20) == 0x20))) {
                 v.push_back({(++posx)--, posy});
             }
         }
         if (posx > 0) {
-            if ((b[posx - 1][posy] & 0xC0) == comp) {
+            if (((b[posx - 1][posy] & 0xC0) == comp) or (!t and ((b[posx - 1][posy] & 0x20) == 0x20))) {
                 v.push_back({(--posx)++, posy});
             }
         }
@@ -48,6 +56,7 @@ namespace chess {
         pos L[4] = {{2, 1}, {-2, 1}, {1, 2}, {-1, 2}};
         uint8_t** b = *pgb; // put the game board array in the current scope
         uint8_t comp = is_white ? 0x40 : 0x80;
+        // for Knights, the optional parameter t is not used.
         
         // L-shapes: -2x-1y ; -2x+1y ; -1x-2y ; -1x+2y ; +1x-2y ; +1x+2y ; +2x-1y ; +2x+1y
         if (p.x > 1) {
