@@ -183,14 +183,15 @@ namespace chess {
     bool GameEngine :: in_check (bool c) {
         // find all cells that the king cannot exist in. If the current cell is in the list, then the king is in check.
         uint8_t k_score = c ? 0x60 : 0xA0;
-        uint8_t comp = c ? 0x40 : 0x80;
         pos k_pos;
         std::vector<pos> vec;
         // search for the King's cell
         for (int8_t j = 0; j < 8; ++j) {
             for (int8_t i = 0; i < 8; ++i) {
-                if (board[i][j] == k_score) { k_pos = {i, j}; }
-                break;
+                if ((board[i][j] & k_score) == k_score) {
+                    k_pos = {i, j};
+                    break;
+                }
             }
         }
         // look for all cells that can be attacked by the opponent
@@ -199,6 +200,8 @@ namespace chess {
         for (auto& cell : vec) {
             cell.print_pos();
         }
+        std::cout << std::endl;
+        k_pos.print_pos();
         
         // check if the k_pos is in v.
         return vec_search<pos>(vec, k_pos);
