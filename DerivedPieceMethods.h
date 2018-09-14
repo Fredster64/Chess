@@ -9,358 +9,10 @@
 
 namespace chess {
     
-    void Pawn :: check_moves (std::vector<pos>& v, bool t) {
-        int8_t posx = position.x;
-        int8_t posy = position.y;
-        uint8_t** b = *pgb; // put the game board array in the current scope
-        
-        // will work on 'check' case conditions and en-passant rules later.
-        is_white ? ++posy : --posy;
-        
-        uint8_t comp = is_white ? 0x80 : 0x40;
-        if (posx < 7) {
-            if ((b[posx + 1][posy] & 0xC0) == comp) {
-                v.push_back({(++posx)--, posy});
-            }
-        }
-        if (posx > 0) {
-            if ((b[posx - 1][posy] & 0xC0) == comp) {
-                v.push_back({(--posx)++, posy});
-            }
-        }
-        if (t) {
-            if (b[posx][posy] == 0 and posy != 0 and posy != 7) {
-                v.push_back({posx, posy});
-            }
-            if (first_move) {
-                if (b[posx][posy] == 0) {
-                    is_white ? ++posy : --posy;
-                    if (b[posx][posy] == 0) {
-                        valid_moves.push_back({posx, posy});
-                    }
-                }
-            }
-        }
-    }
-    
-    void Knight :: check_moves (std::vector<pos>& v, bool t) {
-        const pos p = position;
-        pos L[4] = {{2, 1}, {-2, 1}, {1, 2}, {-1, 2}};
-        uint8_t** b = *pgb; // put the game board array in the current scope
-        uint8_t comp = is_white ? 0x40 : 0x80;
-        // L-shapes: -2x-1y ; -2x+1y ; -1x-2y ; -1x+2y ; +1x-2y ; +1x+2y ; +2x-1y ; +2x+1y
-        if (p.x > 1) {
-            if (p.y > 0) {
-                if ((b[p.x - 2][p.y - 1] & 0xC0) != comp) v.push_back(p - L[0]);
-            }
-            if (p.y < 7) {
-                if ((b[p.x - 2][p.y + 1] & 0xC0) != comp) v.push_back(p + L[1]);
-            }
-        }
-        if (p.x > 0) {
-            if (p.y > 1) {
-                if ((b[p.x - 1][p.y - 2] & 0xC0) != comp) v.push_back(p - L[2]);
-            }
-            if (p.y < 6) {
-                if ((b[p.x - 1][p.y + 2] & 0xC0) != comp) v.push_back(p + L[3]);
-            }
-        }
-        if (p.x < 6) {
-            if (p.y > 0) {
-                if ((b[p.x + 2][p.y - 1] & 0xC0) != comp) v.push_back(p - L[1]);
-            }
-            if (p.y < 7) {
-                if ((b[p.x + 2][p.y + 1] & 0xC0) != comp) v.push_back(p + L[0]);
-            }
-        }
-        if (p.x < 7) {
-            if (p.y > 1) {
-                if ((b[p.x + 1][p.y - 2] & 0xC0) != comp) v.push_back(p - L[3]);
-            }
-            if (p.y < 6) {
-                if ((b[p.x + 1][p.y + 2] & 0xC0) != comp) v.push_back(p + L[2]);
-            }
-        }
-    }
-    
-    void Bishop :: check_moves (std::vector<pos>& v, bool t) {
-        int8_t posx = position.x + 1;
-        int8_t posy = position.y + 1;
-        uint8_t** b = *pgb; // put the game board array in the current scope
-        
-        uint8_t comp = is_white ? 0x40 : 0x80;
-        
-        // up-left, up-right, down-left, down-right
-        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) == comp) {
-                break;
-            } else if (b[posx][posy] > 0) {
-                v.push_back({posx, posy});
-                break;
-            } else {
-                v.push_back({posx++, posy++});
-            }
-        }
-        posx = position.x + 1;
-        posy = position.y - 1;
-        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) == comp) {
-                break;
-            } else if (b[posx][posy] > 0) {
-                v.push_back({posx, posy});
-                break;
-            } else {
-                v.push_back({posx++, posy--});
-            }
-        }
-        posx = position.x - 1;
-        posy = position.y + 1;
-        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) == comp) {
-                break;
-            } else if (b[posx][posy] > 0) {
-                v.push_back({posx, posy});
-                break;
-            } else {
-                v.push_back({posx--, posy++});
-            }
-        }
-        posx = position.x - 1;
-        posy = position.y - 1;
-        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) == comp) {
-                break;
-            } else if (b[posx][posy] > 0) {
-                v.push_back({posx, posy});
-                break;
-            } else {
-                v.push_back({posx--, posy--});
-            }
-        }
-    }
-    
-    void Rook :: check_moves (std::vector<pos>& v, bool t) {
-        int8_t posx = position.x + 1;
-        int8_t posy = position.y;
-        uint8_t** b = *pgb; // put the game board array in the current scope
-        
-        uint8_t comp = is_white ? 0x40 : 0x80;
-        
-        // up, down, left, right
-        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) == comp) {
-                break;
-            } else if (b[posx][posy] > 0) {
-                v.push_back({posx, posy});
-                break;
-            } else {
-                v.push_back({posx++, posy});
-            }
-        }
-        posx = position.x - 1;
-        posy = position.y;
-        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) == comp) {
-                break;
-            } else if (b[posx][posy] > 0) {
-                v.push_back({posx, posy});
-                break;
-            } else {
-                v.push_back({posx--, posy});
-            }
-        }
-        posx = position.x;
-        posy = position.y + 1;
-        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) == comp) {
-                break;
-            } else if (b[posx][posy] > 0) {
-                v.push_back({posx, posy});
-                break;
-            } else {
-                v.push_back({posx, posy++});
-            }
-        }
-        posx = position.x;
-        posy = position.y - 1;
-        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) == comp) {
-                break;
-            } else if (b[posx][posy] > 0) {
-                v.push_back({posx, posy});
-                break;
-            } else {
-                v.push_back({posx, posy--});
-            }
-        }
-    }
-    
-    void Queen :: check_moves (std::vector<pos>& v, bool t) {
-        int8_t posx = position.x + 1;
-        int8_t posy = position.y + 1;
-        uint8_t** b = *pgb; // put the game board array in the current scope
-        
-        uint8_t comp = is_white ? 0x40 : 0x80;
-        
-        // up-left, up-right, down-left, down-right, up, down, left, right
-        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) == comp) {
-                break;
-            } else if (b[posx][posy] > 0) {
-                v.push_back({posx, posy});
-                break;
-            } else {
-                v.push_back({posx++, posy++});
-            }
-        }
-        posx = position.x + 1;
-        posy = position.y - 1;
-        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) == comp) {
-                break;
-            } else if (b[posx][posy] > 0) {
-                v.push_back({posx, posy});
-                break;
-            } else {
-                v.push_back({posx++, posy--});
-            }
-        }
-        posx = position.x - 1;
-        posy = position.y + 1;
-        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) == comp) {
-                break;
-            } else if (b[posx][posy] > 0) {
-                v.push_back({posx, posy});
-                break;
-            } else {
-                v.push_back({posx--, posy++});
-            }
-        }
-        posx = position.x - 1;
-        posy = position.y - 1;
-        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) == comp) {
-                break;
-            } else if (b[posx][posy] > 0) {
-                v.push_back({posx, posy});
-                break;
-            } else {
-                v.push_back({posx--, posy--});
-            }
-        }
-        posx = position.x + 1;
-        posy = position.y;
-        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) == comp) {
-                break;
-            } else if (b[posx][posy] > 0) {
-                v.push_back({posx, posy});
-                break;
-            } else {
-                v.push_back({posx++, posy});
-            }
-        }
-        posx = position.x - 1;
-        posy = position.y;
-        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) == comp) {
-                break;
-            } else if (b[posx][posy] > 0) {
-                v.push_back({posx, posy});
-                break;
-            } else {
-                v.push_back({posx--, posy});
-            }
-        }
-        posx = position.x;
-        posy = position.y + 1;
-        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) == comp) {
-                break;
-            } else if (b[posx][posy] > 0) {
-                v.push_back({posx, posy});
-                break;
-            } else {
-                v.push_back({posx, posy++});
-            }
-        }
-        posx = position.x;
-        posy = position.y - 1;
-        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) == comp) {
-                break;
-            } else if (b[posx][posy] > 0) {
-                v.push_back({posx, posy});
-                break;
-            } else {
-                v.push_back({posx, posy--});
-            }
-        }
-    }
-    
-    void King :: check_moves (std::vector<pos>& v, bool t) {
-        
-        int8_t posx = position.x + 1;
-        int8_t posy = position.y + 1;
-        uint8_t** b = *pgb; // put the game board array in the current scope
-        
-        uint8_t comp = is_white ? 0x40 : 0x80;
-        
-        // UP-RIGHT
-        if (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) != comp) {
-                v.push_back({posx, posy});
-            }
-        }
-        // UP
-        if (--posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) != comp) {
-                v.push_back({posx, posy});
-            }
-        }
-        // UP-LEFT
-        if (--posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) != comp) {
-                v.push_back({posx, posy});
-            }
-        }
-        // LEFT
-        if (posx >= 0 and --posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) != comp) {
-                v.push_back({posx, posy});
-            }
-        }
-        // DOWN-LEFT
-        if (posx >= 0 and --posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) != comp) {
-                v.push_back({posx, posy});
-            }
-        }
-        // DOWN
-        if (++posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) != comp) {
-                v.push_back({posx, posy});
-            }
-        }
-        // DOWN-RIGHT
-        if (++posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) != comp) {
-                v.push_back({posx, posy});
-            }
-        }
-        // RIGHT
-        if (posx >= 0 and ++posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) != comp) {
-                v.push_back({posx, posy});
-            }
-        }
-//        for (const auto& move : valid_moves) { print_pos(move); }
-    }
-    
     uint8_t Pawn :: move (pos p) {
         // if first move occurs, it must be set to false.
         uint8_t** b = *pgb;
+        pos p_now = mci.position;
         uint8_t valid = 0;
         for (const auto& m : valid_moves) {
             if (m == p) {
@@ -369,14 +21,14 @@ namespace chess {
             }
         }
         if (valid == 1) {
-            first_move = false;
-            uint8_t temp = b[position.x][position.y];
-            b[position.x][position.y] = 0;
+            mci.first_move = false;
+            uint8_t temp = b[p_now.x][p_now.y];
+            b[p_now.x][p_now.y] = 0;
             if (p.y == 0 or p.y == 7) {
                 valid |= promotion ();
             } else {
-                position = p;
-                b[position.x][position.y] = temp;
+                mci.position = p;
+                b[p.x][p.y] = temp;
             }
         }
         return valid;
@@ -385,6 +37,7 @@ namespace chess {
     uint8_t King :: move (pos p) {
         // an exception case is made for the castling move (not yet implemented).
         uint8_t** b = *pgb;
+        pos p_now = mci.position;
         uint8_t valid = 0;
         for (const auto& m : valid_moves) {
             if (m == p) {
@@ -393,10 +46,10 @@ namespace chess {
             }
         }
         if (valid == 1) {
-            uint8_t temp = b[position.x][position.y];
-            b[position.x][position.y] = 0;
-            position = p;
-            b[position.x][position.y] = temp;
+            uint8_t temp = b[p_now.x][p_now.y];
+            b[p_now.x][p_now.y] = 0;
+            mci.position = p;
+            b[p.x][p.y] = temp;
         }
         return valid;
     }
