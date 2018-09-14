@@ -86,6 +86,8 @@ namespace chess {
             if (in_check((game_status & 0x01) > 0)) {
                 game_status |= 0x20;
                 std::cout << "Check." << std::endl;
+            } else {
+                game_status &= 0xDF;
             }
             // if both true then in Checkmate:
             if ((game_status & 0xA0) == 0xA0) { game_status |= 0x40; }

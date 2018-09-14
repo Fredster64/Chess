@@ -170,7 +170,7 @@ namespace chess {
         void pbp (std::vector<PiecePtr>& v1, std::vector<PiecePtr>& v2, const PiecePtr& pp, const bool c) { c ? v1.push_back(std::move(pp)) : v2.push_back(std::move(pp)); }
         void rm_dlt (std::vector<PiecePtr>& v, const pos p2) {
             v.erase (std::remove_if (v.begin(), v.end(), [p2] (PiecePtr piece) -> bool {
-                chess::pos p = piece->check_position();
+                pos p = piece->check_position();
                 if (p == p2) return true;
                 return false;
             }), v.end());
