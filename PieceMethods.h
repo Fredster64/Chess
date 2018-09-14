@@ -9,18 +9,16 @@
 
 namespace chess {
     
-    Piece :: Piece (const bool piece_colour, const pos coordinates, uint8_t& status_bits, uint8_t**& gb) {
+    Piece :: Piece (const bool piece_colour, const pos coordinates, /*uint8_t& status_bits,*/ uint8_t**& gb) {
         is_white = piece_colour;
         mci.position = coordinates;
         mci.first_move = true;
-        pgs = &status_bits; // copy the address of status_bits to a pointer.
         pgb = &gb; // copy the address of the game board to a pointer.
         mci.gb = &gb; // copy the address of the game board to the MCI.
     }
     
     Piece :: ~Piece (void) {
         valid_moves.clear();
-        pgs = nullptr;
         pgb = nullptr;
     };
     

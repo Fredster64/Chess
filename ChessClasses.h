@@ -52,12 +52,11 @@ namespace chess {
     /* Classes for the Game Pieces. Created by the Engine directly. */
     class Piece {
     public:
-        Piece (const bool player_colour, const pos coordinates, uint8_t& status_bits, uint8_t**& gb); // constructor
+        Piece (const bool player_colour, const pos coordinates, /*uint8_t& status_bits,*/ uint8_t**& gb); // constructor
         ~Piece (void); // destructor
         // Implementing an MCI to control piece movement
         MCI mci;
         std::vector<pos> valid_moves;
-        uint8_t check_gs (void) { return *pgs; }
         pos check_position (void) { return mci.position; }
         void print_info (void);
         void check_moves (std::vector<pos>& v, bool t=true);
@@ -65,7 +64,6 @@ namespace chess {
         virtual uint8_t move (const pos p); // polymorphic, default for N, B, R, Q.
     protected:
         bool is_white; // stores if the piece is White (1) or Black (0).
-        uint8_t* pgs; // *pgs = game_status, pgs = &game_status.
         uint8_t*** pgb; // *pgb = board, pgb = &board.
     private:
     };
