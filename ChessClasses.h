@@ -40,7 +40,7 @@ namespace chess {
         uint8_t check_gs (void) { return *pgs; }
         pos check_position (void) { return position; }
         void print_info (void);
-        void check_moves (std::vector<pos>& v, bool t=true) = 0; // pure polymorphic function
+        void check_moves (std::vector<pos>& v, bool t=true) = 0;
         virtual std::string get_type (void) = 0; // pure polymorphic function
         virtual uint8_t move (const pos p); // polymorphic, default for N, B, R, Q.
     protected:
@@ -57,7 +57,6 @@ namespace chess {
     class Pawn : public Piece {
     public:
         using Piece :: Piece;
-        virtual void check_moves (std::vector<pos>& v, bool t=true);
         uint8_t move (const pos p);
         std::string get_type (void) { return "Pawn"; }
         void is_first_move (bool x) { first_move = x; }
@@ -70,7 +69,6 @@ namespace chess {
     class Knight : public Piece {
     public:
         using Piece :: Piece;
-        void check_moves (std::vector<pos>& v, bool t=true);
         std::string get_type (void) { return "Knight"; }
     protected:
     private:
@@ -79,7 +77,6 @@ namespace chess {
     class Bishop : public Piece {
     public:
         using Piece :: Piece;
-        void check_moves (std::vector<pos>& v, bool t=true);
         std::string get_type (void) { return "Bishop"; }
     protected:
     private:
@@ -88,7 +85,6 @@ namespace chess {
     class Rook : public Piece {
     public:
         using Piece :: Piece;
-        void check_moves (std::vector<pos>& v, bool t=true);
         std::string get_type (void) { return "Rook"; }
     protected:
     private:
@@ -97,7 +93,6 @@ namespace chess {
     class Queen : public Piece {
     public:
         using Piece :: Piece;
-        void check_moves (std::vector<pos>& v, bool t=true);
         std::string get_type (void) { return "Queen"; }
     protected:
     private:
@@ -106,7 +101,6 @@ namespace chess {
     class King : public Piece {
     public:
         using Piece :: Piece;
-        void check_moves (std::vector<pos>& v, bool t=true);
         uint8_t move (const pos p);
         std::string get_type (void) { return "King"; }
     protected:
