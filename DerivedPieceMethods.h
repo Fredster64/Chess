@@ -109,237 +109,39 @@ namespace chess {
     }
     
     void Bishop :: check_moves (std::vector<pos>& v, bool t) {
-        int8_t posx = position.x + 1;
-        int8_t posy = position.y + 1;
-        uint8_t** b = *pgb; // put the game board array in the current scope
-        
-        uint8_t comp = is_white ? 0x40 : 0x80;
+        pos D[2] = {{1, 1}, {1, -1}};
         
         // up-left, up-right, down-left, down-right
-        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) == comp) {
-                if (!t) v.push_back({posx, posy});
-                break;
-            } else if (b[posx][posy] > 0) {
-                v.push_back({posx, posy});
-                break;
-            } else {
-                v.push_back({posx++, posy++});
-            }
-        }
-        posx = position.x + 1;
-        posy = position.y - 1;
-        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) == comp) {
-                if (!t) v.push_back({posx, posy});
-                break;
-            } else if (b[posx][posy] > 0) {
-                v.push_back({posx, posy});
-                break;
-            } else {
-                v.push_back({posx++, posy--});
-            }
-        }
-        posx = position.x - 1;
-        posy = position.y + 1;
-        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) == comp) {
-                if (!t) v.push_back({posx, posy});
-                break;
-            } else if (b[posx][posy] > 0) {
-                v.push_back({posx, posy});
-                break;
-            } else {
-                v.push_back({posx--, posy++});
-            }
-        }
-        posx = position.x - 1;
-        posy = position.y - 1;
-        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) == comp) {
-                if (!t) v.push_back({posx, posy});
-                break;
-            } else if (b[posx][posy] > 0) {
-                v.push_back({posx, posy});
-                break;
-            } else {
-                v.push_back({posx--, posy--});
-            }
-        }
+        this->pb_inc (position + D[0], v, D[0], t);
+        this->pb_inc (position + D[1], v, D[1], t);
+        this->pb_inc (position - D[0], v, -D[0], t);
+        this->pb_inc (position - D[1], v, -D[1], t);
     }
     
     void Rook :: check_moves (std::vector<pos>& v, bool t) {
-        int8_t posx = position.x + 1;
-        int8_t posy = position.y;
-        uint8_t** b = *pgb; // put the game board array in the current scope
         
-        uint8_t comp = is_white ? 0x40 : 0x80;
-        
-        // if t=false, we need to include any pieces of the opposite colour that are 'threatened'.
+        pos D[2] = {{1, 0}, {0, 1}};
         
         // up, down, left, right
-        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) == comp) {
-                if (!t) v.push_back({posx, posy});
-                break;
-            } else if (b[posx][posy] > 0) {
-                v.push_back({posx, posy});
-                break;
-            } else {
-                v.push_back({posx++, posy});
-            }
-        }
-        posx = position.x - 1;
-        posy = position.y;
-        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) == comp) {
-                if (!t) v.push_back({posx, posy});
-                break;
-            } else if (b[posx][posy] > 0) {
-                v.push_back({posx, posy});
-                break;
-            } else {
-                v.push_back({posx--, posy});
-            }
-        }
-        posx = position.x;
-        posy = position.y + 1;
-        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) == comp) {
-                if (!t) v.push_back({posx, posy});
-                break;
-            } else if (b[posx][posy] > 0) {
-                v.push_back({posx, posy});
-                break;
-            } else {
-                v.push_back({posx, posy++});
-            }
-        }
-        posx = position.x;
-        posy = position.y - 1;
-        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) == comp) {
-                if (!t) v.push_back({posx, posy});
-                break;
-            } else if (b[posx][posy] > 0) {
-                v.push_back({posx, posy});
-                break;
-            } else {
-                v.push_back({posx, posy--});
-            }
-        }
+        this->pb_inc (position + D[0], v, D[0], t);
+        this->pb_inc (position + D[1], v, D[1], t);
+        this->pb_inc (position - D[0], v, -D[0], t);
+        this->pb_inc (position - D[1], v, -D[1], t);
     }
     
     void Queen :: check_moves (std::vector<pos>& v, bool t) {
-        int8_t posx = position.x + 1;
-        int8_t posy = position.y + 1;
-        uint8_t** b = *pgb; // put the game board array in the current scope
         
-        uint8_t comp = is_white ? 0x40 : 0x80;
+        pos D[4] = {{1, 1}, {1, 0}, {1, -1}, {0, 1}};
         
         // up-left, up-right, down-left, down-right, up, down, left, right
-        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) == comp) {
-                if (!t) v.push_back({posx, posy});
-                break;
-            } else if (b[posx][posy] > 0) {
-                v.push_back({posx, posy});
-                break;
-            } else {
-                v.push_back({posx++, posy++});
-            }
-        }
-        posx = position.x + 1;
-        posy = position.y - 1;
-        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) == comp) {
-                if (!t) v.push_back({posx, posy});
-                break;
-            } else if (b[posx][posy] > 0) {
-                v.push_back({posx, posy});
-                break;
-            } else {
-                v.push_back({posx++, posy--});
-            }
-        }
-        posx = position.x - 1;
-        posy = position.y + 1;
-        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) == comp) {
-                if (!t) v.push_back({posx, posy});
-                break;
-            } else if (b[posx][posy] > 0) {
-                v.push_back({posx, posy});
-                break;
-            } else {
-                v.push_back({posx--, posy++});
-            }
-        }
-        posx = position.x - 1;
-        posy = position.y - 1;
-        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) == comp) {
-                if (!t) v.push_back({posx, posy});
-                break;
-            } else if (b[posx][posy] > 0) {
-                v.push_back({posx, posy});
-                break;
-            } else {
-                v.push_back({posx--, posy--});
-            }
-        }
-        posx = position.x + 1;
-        posy = position.y;
-        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) == comp) {
-                if (!t) v.push_back({posx, posy});
-                break;
-            } else if (b[posx][posy] > 0) {
-                v.push_back({posx, posy});
-                break;
-            } else {
-                v.push_back({posx++, posy});
-            }
-        }
-        posx = position.x - 1;
-        posy = position.y;
-        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) == comp) {
-                if (!t) v.push_back({posx, posy});
-                break;
-            } else if (b[posx][posy] > 0) {
-                v.push_back({posx, posy});
-                break;
-            } else {
-                v.push_back({posx--, posy});
-            }
-        }
-        posx = position.x;
-        posy = position.y + 1;
-        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) == comp) {
-                if (!t) v.push_back({posx, posy});
-                break;
-            } else if (b[posx][posy] > 0) {
-                v.push_back({posx, posy});
-                break;
-            } else {
-                v.push_back({posx, posy++});
-            }
-        }
-        posx = position.x;
-        posy = position.y - 1;
-        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) == comp) {
-                if (!t) v.push_back({posx, posy});
-                break;
-            } else if (b[posx][posy] > 0) {
-                v.push_back({posx, posy});
-                break;
-            } else {
-                v.push_back({posx, posy--});
-            }
-        }
+        this->pb_inc (position + D[0], v, D[0], t);
+        this->pb_inc (position + D[1], v, D[1], t);
+        this->pb_inc (position - D[0], v, -D[0], t);
+        this->pb_inc (position - D[1], v, -D[1], t);
+        this->pb_inc (position + D[2], v, D[2], t);
+        this->pb_inc (position + D[3], v, D[3], t);
+        this->pb_inc (position - D[2], v, -D[2], t);
+        this->pb_inc (position - D[3], v, -D[3], t);
     }
     
     void King :: check_moves (std::vector<pos>& v, bool t) {

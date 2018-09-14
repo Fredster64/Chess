@@ -26,6 +26,15 @@ namespace chess {
     pos operator-(const pos& p1, const pos& p2) { // define pos subtraction
         return {static_cast<int8_t>(p1.x - p2.x), static_cast<int8_t>(p1.y - p2.y)};
     }
+    pos operator-(const pos& p) { // define unary negative
+        return {static_cast<int8_t>(-p.x), static_cast<int8_t>(-p.y)};
+    }
+    void operator+=(pos& p1, const pos& p2) { // define assignment addition
+        p1 = p1 + p2;
+    }
+    void operator-=(pos& p1, const pos& p2) { // define assignment subtraction
+        p1 = p1 - p2;
+    }
     
     /* Classes for the Game Pieces. Created by the Engine directly. */
     class Piece {
@@ -39,6 +48,7 @@ namespace chess {
         virtual void check_moves (std::vector<pos>& v, bool t=true) = 0; // pure polymorphic function
         virtual std::string get_type (void) = 0; // pure polymorphic function
         virtual uint8_t move (const pos p); // polymorphic, default for N, B, R, Q.
+        void pb_inc (pos p, std::vector<pos>& v, pos inc, bool t);
     protected:
         bool is_white; // stores if the piece is White (1) or Black (0).
         pos position; // the x-y position of the piece.
