@@ -51,7 +51,6 @@ namespace chess {
         uint8_t check_gs (void) { return *pgs; }
         pos check_position (void) { return position; }
         void print_info (void);
-        void check_moves (std::vector<pos>& v, bool t=true) = 0;
         virtual std::string get_type (void) = 0; // pure polymorphic function
         virtual uint8_t move (const pos p); // polymorphic, default for N, B, R, Q.
         void pb_inc (pos p, std::vector<pos>& v, pos inc, bool t);

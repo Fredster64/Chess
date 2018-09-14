@@ -16,7 +16,7 @@ namespace chess {
   
   // I've also written the Queen move in terms of the Rook and Bishop ones
   
-  void MoveCheckInterface::check_moves (std::vector<pos>& v, bool t, std::string pieceType, pos startPos, bool isWhite) {
+  void MoveCheckInterface :: check_moves (std::vector<pos>& v, bool t, std::string pieceType, pos startPos, bool isWhite) {
   
     uint8_t** b = *pgb; // put the game board array in the current scope
   
@@ -100,115 +100,27 @@ namespace chess {
     }
     
     else if ( pieceType == "Bishop" || pieceType == "Queen" ) {
-        posx = startPos.x + 1;
-        posy = startPos.y + 1;
-        
-        comp = is_white ? 0x40 : 0x80;
+        pos D[2] = {{1, 1}, {1, -1}};
         
         // up-left, up-right, down-left, down-right
-        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) == comp) {
-                break;
-            } else if (b[posx][posy] > 0) {
-                v.push_back({posx, posy});
-                break;
-            } else {
-                v.push_back({posx++, posy++});
-            }
-        }
-        posx = startPos.x + 1;
-        posy = startPos.y - 1;
-        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) == comp) {
-                break;
-            } else if (b[posx][posy] > 0) {
-                v.push_back({posx, posy});
-                break;
-            } else {
-                v.push_back({posx++, posy--});
-            }
-        }
-        posx = startPos.x - 1;
-        posy = startPos.y + 1;
-        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) == comp) {
-                break;
-            } else if (b[posx][posy] > 0) {
-                v.push_back({posx, posy});
-                break;
-            } else {
-                v.push_back({posx--, posy++});
-            }
-        }
-        posx = startPos.x - 1;
-        posy = startPos.y - 1;
-        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) == comp) {
-                break;
-            } else if (b[posx][posy] > 0) {
-                v.push_back({posx, posy});
-                break;
-            } else {
-                v.push_back({posx--, posy--});
-            }
-        }
+        this->pb_inc (position + D[0], v, D[0], t);
+        this->pb_inc (position + D[1], v, D[1], t);
+        this->pb_inc (position - D[0], v, -D[0], t);
+        this->pb_inc (position - D[1], v, -D[1], t);
+        
         if (pieceType == "Bishop") return; // We still have more Queen moves to do
     }
     
     // Can't use else if here, it would skip half the Queen moves
     if ( pieceType == "Rook" || pieceType == "Queen" ) {
-        posx = position.x + 1;
-        posy = position.y;
-        
-        comp = is_white ? 0x40 : 0x80;
+        pos D[2] = {{1, 0}, {0, 1}};
         
         // up, down, left, right
-        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) == comp) {
-                break;
-            } else if (b[posx][posy] > 0) {
-                v.push_back({posx, posy});
-                break;
-            } else {
-                v.push_back({posx++, posy});
-            }
-        }
-        posx = position.x - 1;
-        posy = position.y;
-        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) == comp) {
-                break;
-            } else if (b[posx][posy] > 0) {
-                v.push_back({posx, posy});
-                break;
-            } else {
-                v.push_back({posx--, posy});
-            }
-        }
-        posx = position.x;
-        posy = position.y + 1;
-        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) == comp) {
-                break;
-            } else if (b[posx][posy] > 0) {
-                v.push_back({posx, posy});
-                break;
-            } else {
-                v.push_back({posx, posy++});
-            }
-        }
-        posx = position.x;
-        posy = position.y - 1;
-        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
-            if ((b[posx][posy] & 0xC0) == comp) {
-                break;
-            } else if (b[posx][posy] > 0) {
-                v.push_back({posx, posy});
-                break;
-            } else {
-                v.push_back({posx, posy--});
-            }
-        }
+        this->pb_inc (position + D[0], v, D[0], t);
+        this->pb_inc (position + D[1], v, D[1], t);
+        this->pb_inc (position - D[0], v, -D[0], t);
+        this->pb_inc (position - D[1], v, -D[1], t);
+        
       return;
     }
   
