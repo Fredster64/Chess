@@ -27,7 +27,7 @@ namespace chess {
         return { static_cast<int8_t>(p1.x - p2.x), static_cast<int8_t>(p1.y - p2.y) };
     }
     pos operator+(const pos& p) { // define unary positive
-        return { static_cast<int8_t>(p.x), static_cast<int8_t>(-p.y) };
+        return { static_cast<int8_t>(p.x), static_cast<int8_t>(p.y) };
     }
     pos operator-(const pos& p) { // define unary negative
         return { static_cast<int8_t>(-p.x), static_cast<int8_t>(-p.y) };
