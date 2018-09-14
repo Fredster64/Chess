@@ -36,10 +36,10 @@ namespace chess {
         p1 = p1 - p2;
     }
     
-    /* Putting all the movement-checking in one place.
-       no need for polymorphism, and less repetition of code */
-    struct MoveCheckInterface {
+    struct MCI { // Movement-Checker Interface
+        std::vector<pos> valid_moves;
         void check_moves (std::vector<pos>& v, bool t, std::string pieceType, pos startPos, bool isWhite); // Handles movement of all pieces
+        pos position;
     };    
     
     /* Classes for the Game Pieces. Created by the Engine directly. */
@@ -47,21 +47,19 @@ namespace chess {
     public:
         Piece (const bool player_colour, const pos coordinates, uint8_t& status_bits, uint8_t**& gb); // constructor
         ~Piece (void); // destructor
-        std::vector<pos> valid_moves;
         uint8_t check_gs (void) { return *pgs; }
-        pos check_position (void) { return position; }
+        pos check_position (void) { return move_checker.position; }
         void print_info (void);
         virtual std::string get_type (void) = 0; // pure polymorphic function
         virtual uint8_t move (const pos p); // polymorphic, default for N, B, R, Q.
         void pb_inc (pos p, std::vector<pos>& v, pos inc, bool t);
+        // Implementing an MCI to control piece movement
+        MCI move_checker;
     protected:
         bool is_white; // stores if the piece is White (1) or Black (0).
-        pos position; // the x-y position of the piece.
         uint8_t* pgs; // *pgs = game_status, pgs = &game_status.
         uint8_t*** pgb; // *pbg = board, pbg = &board.
     private:
-        // Implementing a moveChecker interface to control piece movement 
-        MoveCheckInterface moveChecker;
     };
     
     class Pawn : public Piece {
