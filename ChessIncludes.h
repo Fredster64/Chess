@@ -14,6 +14,7 @@ void rm_dupes (std::vector<T>& v);
 
 #include "GameEngineMethods.h" // Methods for class GameEngine
 #include "PieceMethods.h" // Methods for class Piece
+#include "MoveCheckInterfaceMethods.h" // Methods for the MCI
 #include "DerivedPieceMethods.h" // Methods from derived classes of Piece
 
 /* All custom, non-member function definitions go here. */

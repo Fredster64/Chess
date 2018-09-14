@@ -21,13 +21,16 @@ namespace chess {
         return (p1.x != p2.x) or (p1.y != p2.y);
     }
     pos operator+(const pos& p1, const pos& p2) { // define pos addition
-        return {static_cast<int8_t>(p1.x + p2.x), static_cast<int8_t>(p1.y + p2.y)};
+        return { static_cast<int8_t>(p1.x + p2.x), static_cast<int8_t>(p1.y + p2.y) };
     }
     pos operator-(const pos& p1, const pos& p2) { // define pos subtraction
-        return {static_cast<int8_t>(p1.x - p2.x), static_cast<int8_t>(p1.y - p2.y)};
+        return { static_cast<int8_t>(p1.x - p2.x), static_cast<int8_t>(p1.y - p2.y) };
+    }
+    pos operator+(const pos& p) { // define unary positive
+        return { static_cast<int8_t>(p.x), static_cast<int8_t>(-p.y) };
     }
     pos operator-(const pos& p) { // define unary negative
-        return {static_cast<int8_t>(-p.x), static_cast<int8_t>(-p.y)};
+        return { static_cast<int8_t>(-p.x), static_cast<int8_t>(-p.y) };
     }
     void operator+=(pos& p1, const pos& p2) { // define assignment addition
         p1 = p1 + p2;
@@ -36,29 +39,34 @@ namespace chess {
         p1 = p1 - p2;
     }
     
-    struct MCI { // Movement-Checker Interface
-        std::vector<pos> valid_moves;
-        void check_moves (std::vector<pos>& v, bool t, std::string pieceType, pos startPos, bool isWhite); // Handles movement of all pieces
+    struct MovementCheckerInterface { // Movement-Checker Interface
+        void check_moves (std::vector<pos>& v, std::string pieceType, bool W, bool t=true); // Handles movement of all pieces
+        void pb_inc (pos p, std::vector<pos>& v, pos inc, bool is_white, bool t);
         pos position;
-    };    
+        bool first_move;
+        uint8_t*** gb; // *gb = board, gb = &board.
+    };
+    
+    typedef MovementCheckerInterface MCI;
     
     /* Classes for the Game Pieces. Created by the Engine directly. */
     class Piece {
     public:
         Piece (const bool player_colour, const pos coordinates, uint8_t& status_bits, uint8_t**& gb); // constructor
         ~Piece (void); // destructor
+        // Implementing an MCI to control piece movement
+        MCI mci;
+        std::vector<pos> valid_moves;
         uint8_t check_gs (void) { return *pgs; }
-        pos check_position (void) { return move_checker.position; }
+        pos check_position (void) { return mci.position; }
         void print_info (void);
+        void check_moves (std::vector<pos>& v, bool t=true);
         virtual std::string get_type (void) = 0; // pure polymorphic function
         virtual uint8_t move (const pos p); // polymorphic, default for N, B, R, Q.
-        void pb_inc (pos p, std::vector<pos>& v, pos inc, bool t);
-        // Implementing an MCI to control piece movement
-        MCI move_checker;
     protected:
         bool is_white; // stores if the piece is White (1) or Black (0).
         uint8_t* pgs; // *pgs = game_status, pgs = &game_status.
-        uint8_t*** pgb; // *pbg = board, pbg = &board.
+        uint8_t*** pgb; // *pgb = board, pgb = &board.
     private:
     };
     
@@ -67,11 +75,9 @@ namespace chess {
         using Piece :: Piece;
         uint8_t move (const pos p);
         std::string get_type (void) { return "Pawn"; }
-        void is_first_move (bool x) { first_move = x; }
     protected:
     private:
         uint8_t promotion (void);
-        bool first_move;
     };
     
     class Knight : public Piece {

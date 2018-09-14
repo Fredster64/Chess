@@ -97,7 +97,6 @@ namespace chess {
     void GameEngine :: place_pawns (const bool c, const int8_t r) {
         for (int8_t i = 0; i < 8; ++i) {
             PawnPtr pawn (new Pawn (c, {i, r}, game_status, board));
-            pawn->is_first_move(true);
             this->pbp (white_pieces, black_pieces, pawn, c);
             board[i][r] |= c ? 0x41 : 0x81;
         }
