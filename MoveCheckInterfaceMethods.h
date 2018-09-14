@@ -16,7 +16,7 @@ namespace chess {
   
   // I've also written the Queen move in terms of the Rook and Bishop ones
   
-  void MoveCheckInterface::check_moves (std::vector<pos>& v, bool t=true, std::string pieceType, pos startPos, bool isWhite) {
+  void MoveCheckInterface::check_moves (std::vector<pos>& v, bool t, std::string pieceType, pos startPos, bool isWhite) {
   
     uint8_t** b = *pgb; // put the game board array in the current scope
   
