@@ -10,8 +10,6 @@ However, the whole program has been implemented using 8-bit integers and 64-bit 
 I am mainly hoping for speed when this is built, hopefully taking less than a second per move for the computer.
 If this can be implemented well, I will try the same program in C, without the fancy modern C++ STL objects :)
 
-I still refuse to use <algorithm>
-
 Things I implemented for the first time in this project:
 
 - Operator overloading

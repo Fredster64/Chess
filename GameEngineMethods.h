@@ -23,13 +23,12 @@ namespace chess {
         bool colour = true;
         int8_t row = 1;
         do {
-            place_pawns (colour, row);
+            this->place_pawns (colour, row);
             colour ? --row : ++row;
-            place_knights (colour, row);
-            place_bishops (colour, row);
-            
-            place_rooks (colour, row);
-            place_royals (colour, row);
+            this->place_knights (colour, row);
+            this->place_bishops (colour, row);
+            this->place_rooks (colour, row);
+            this->place_royals (colour, row);
             colour = !colour;
             row = 6;
         } while (!colour);
@@ -66,7 +65,7 @@ namespace chess {
             } else do {
                 std::cout << "Please enter where the piece is moving to." << std::endl;
                 std::cin >> p;
-                pout = char2int(p);
+                pout = this->char2int(p);
                 if (move_piece (pin, pout)) {
                     print_board ();
                     allowed = true;
@@ -87,6 +86,8 @@ namespace chess {
             if (in_check((game_status & 0x01) > 0)) {
                 game_status |= 0x20;
                 std::cout << "Check." << std::endl;
+            } else {
+                game_status &= 0xDF;
             }
             // if both true then in Checkmate:
             if ((game_status & 0xA0) == 0xA0) { game_status |= 0x40; }
@@ -97,7 +98,7 @@ namespace chess {
         for (int8_t i = 0; i < 8; ++i) {
             PawnPtr pawn (new Pawn (c, {i, r}, game_status, board));
             pawn->is_first_move(true);
-            pbp (white_pieces, black_pieces, pawn, c);
+            this->pbp (white_pieces, black_pieces, pawn, c);
             board[i][r] |= c ? 0x41 : 0x81;
         }
     }
@@ -105,7 +106,7 @@ namespace chess {
     void GameEngine :: place_knights (const bool c, const int8_t r) {
         for (int8_t i = 1; i < 8; i += 5) {
             KnightPtr knight (new Knight (c, {i, r}, game_status, board));
-            pbp (white_pieces, black_pieces, knight, c);
+            this->pbp (white_pieces, black_pieces, knight, c);
             board[i][r] |= c ? 0x42 : 0x82;
         }
     }
@@ -113,7 +114,7 @@ namespace chess {
     void GameEngine :: place_bishops (const bool c, const int8_t r) {
         for (int8_t i = 2; i < 8; i += 3) {
             BishopPtr bishop (new Bishop (c, {i, r}, game_status, board));
-            pbp (white_pieces, black_pieces, bishop, c);
+            this->pbp (white_pieces, black_pieces, bishop, c);
             board[i][r] |= c ? 0x44 : 0x84;
         }
     }
@@ -121,17 +122,17 @@ namespace chess {
     void GameEngine :: place_rooks (const bool c, const int8_t r) {
         for (int8_t i = 0; i < 8; i+=7) {
             RookPtr rook (new Rook (c, {i, r}, game_status, board));
-            pbp (white_pieces, black_pieces, rook, c);
+            this->pbp (white_pieces, black_pieces, rook, c);
             board[i][r] |= c ? 0x48 : 0x88;
         }
     }
     
     void GameEngine :: place_royals (const bool c, const int8_t r) {
         QueenPtr queen (new Queen (c, {3, r}, game_status, board));
-        pbp (white_pieces, black_pieces, queen, c);
+        this->pbp (white_pieces, black_pieces, queen, c);
         board[3][r] |= c ? 0x50 : 0x90;
         KingPtr king (new King (c, {4, r}, game_status, board));
-        pbp (white_pieces, black_pieces, king, c);
+        this->pbp (white_pieces, black_pieces, king, c);
         board[4][r] |= c ? 0x60 : 0xA0;
     }
     
@@ -170,7 +171,7 @@ namespace chess {
                 case 0x08: {
                     QueenPtr queen (new Queen (is_white, pto, game_status, board));
                     board[pto.x][pto.y] = (c ? 0x50 : 0x90);
-                    pbp (white_pieces, black_pieces, queen, c);
+                    this->pbp (white_pieces, black_pieces, queen, c);
                     break;
                 }
             }
@@ -185,19 +186,25 @@ namespace chess {
         uint8_t k_score = c ? 0x60 : 0xA0;
         uint8_t comp = c ? 0x40 : 0x80;
         pos k_pos;
-        // search for the King's cell and look for all cells occupied by you
+        std::vector<pos> vec;
+        // search for the King's cell
         for (int8_t j = 0; j < 8; ++j) {
             for (int8_t i = 0; i < 8; ++i) {
-                if (board[i][j] == k_score) { k_pos = {i, j}; }
-                else if ((board[i][j] | comp) > 0) { danger_cells.push_back({i, j}); }
+                if ((board[i][j] & k_score) == k_score) {
+                    k_pos = {i, j};
+                    break;
+                }
             }
         }
         // look for all cells that can be attacked by the opponent
-        for (const auto& piece : (c ? black_pieces : white_pieces)) {
-            piece->check_moves (danger_cells, false);
+        for (const auto& piece : (c ? black_pieces : white_pieces)) { piece->check_moves (vec, false); }
+        rm_dupes<pos>(vec);
+        for (auto& cell : vec) {
+            cell.print_pos();
         }
+        
         // check if the k_pos is in v.
-        return vec_search (danger_cells, k_pos);
+        return vec_search<pos>(vec, k_pos);
     }
     
     void GameEngine :: print_board (void) {

@@ -36,7 +36,7 @@ namespace chess {
         uint8_t** b = *pgb;
         uint8_t valid = 0;
         for (const auto& m : valid_moves) {
-            if (m.x == p.x and m.y == p.y) {
+            if (m == p) {
                 valid = 1;
                 break;
             }
@@ -48,6 +48,23 @@ namespace chess {
             b[position.x][position.y] = temp;
         }
         return valid;
+    }
+    
+    void Piece :: pb_inc (pos p, std::vector<pos>& v, pos inc, bool t) {
+        uint8_t** b = *pgb; // put the game board array in the current scope
+        uint8_t comp = is_white ? 0x40 : 0x80;
+        while (p.x >= 0 and p.y >= 0 and p.x < 8 and p.y < 8) {
+            if ((b[p.x][p.y] & 0xC0) == comp) {
+                if (!t) v.push_back({p.x, p.y});
+                break;
+            } else if (b[p.x][p.y] > 0) {
+                v.push_back({p.x, p.y});
+                break;
+            } else {
+                v.push_back({p.x, p.y});
+                p+=inc;
+            }
+        }
     }
 }
 

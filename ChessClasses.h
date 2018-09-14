@@ -5,12 +5,14 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include <algorithm>
 
 namespace chess {
     
     struct pos {
         int8_t x;
         int8_t y;
+        void print_pos (void) { std::cout << static_cast<char>(x + 'A') << static_cast<int>(y + 1) << std::endl; }
     };
     bool operator==(const pos& p1, const pos& p2) { // define pos equality
         return (p1.x == p2.x) and (p1.y == p2.y);
@@ -23,6 +25,15 @@ namespace chess {
     }
     pos operator-(const pos& p1, const pos& p2) { // define pos subtraction
         return {static_cast<int8_t>(p1.x - p2.x), static_cast<int8_t>(p1.y - p2.y)};
+    }
+    pos operator-(const pos& p) { // define unary negative
+        return {static_cast<int8_t>(-p.x), static_cast<int8_t>(-p.y)};
+    }
+    void operator+=(pos& p1, const pos& p2) { // define assignment addition
+        p1 = p1 + p2;
+    }
+    void operator-=(pos& p1, const pos& p2) { // define assignment subtraction
+        p1 = p1 - p2;
     }
     
     /* Putting all the movement-checking in one place.
@@ -43,12 +54,12 @@ namespace chess {
         void check_moves (std::vector<pos>& v, bool t=true) = 0;
         virtual std::string get_type (void) = 0; // pure polymorphic function
         virtual uint8_t move (const pos p); // polymorphic, default for N, B, R, Q.
+        void pb_inc (pos p, std::vector<pos>& v, pos inc, bool t);
     protected:
         bool is_white; // stores if the piece is White (1) or Black (0).
         pos position; // the x-y position of the piece.
         uint8_t* pgs; // *pgs = game_status, pgs = &game_status.
         uint8_t*** pgb; // *pbg = board, pbg = &board.
-        void print_pos (const pos p) { std::cout << static_cast<char>(p.x + 'A') << static_cast<int>(p.y + 1) << std::endl; }
     private:
         // Implementing a moveChecker interface to control piece movement 
         MoveCheckInterface moveChecker;
@@ -144,8 +155,8 @@ namespace chess {
         /* if Bit0 HIGH - Whites turn, else Blacks turn.  */
         /* if Bit1 HIGH - White won the game.             */
         /* if Bit2 HIGH - Black won the game.             */
-        /* if Bit3 HIGH - White Pawn to be promoted.      */
-        /* if Bit4 HIGH - Black Pawn to be promoted.      */
+        /* if Bit3 HIGH - Unassigned                      */
+        /* if Bit4 HIGH - Unassigned                      */
         /* if Bit5 HIGH - Current player is in Check.     */
         /* if Bit6 HIGH - Current player is in Checkmate. */
         /* if Bit7 HIGH - Game is in Stalemate.           */
@@ -153,8 +164,6 @@ namespace chess {
         // Vectors to store the game pieces in.
         std::vector<PiecePtr> white_pieces;
         std::vector<PiecePtr> black_pieces;
-        // Vector to save the King's danger cells.
-        std::vector<pos> danger_cells;
         // The Game is played in this function
         void play_game (void);
         // Functions that create and place the pieces upon class construction
@@ -169,12 +178,11 @@ namespace chess {
         // Prints the current board
         void print_board (void);
         // One-Line Functions
-        void print_pos (const pos p) { std::cout << static_cast<char>(p.x + 'A') << static_cast<int>(p.y + 1) << std::endl; }
         pos char2int (const char* p) { return {static_cast<int8_t>(p[0] - 'A'), static_cast<int8_t>(p[1] - '1')}; }
         void pbp (std::vector<PiecePtr>& v1, std::vector<PiecePtr>& v2, const PiecePtr& pp, const bool c) { c ? v1.push_back(std::move(pp)) : v2.push_back(std::move(pp)); }
-        void rm_dlt (std::vector<chess::PiecePtr>& v, const chess::pos p2) {
-            v.erase (std::remove_if (v.begin(), v.end(), [p2] (chess::PiecePtr piece) -> bool {
-                chess::pos p = piece->check_position();
+        void rm_dlt (std::vector<PiecePtr>& v, const pos p2) {
+            v.erase (std::remove_if (v.begin(), v.end(), [p2] (PiecePtr piece) -> bool {
+                pos p = piece->check_position();
                 if (p == p2) return true;
                 return false;
             }), v.end());
