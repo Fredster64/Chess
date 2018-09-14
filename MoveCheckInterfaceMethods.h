@@ -22,7 +22,7 @@ namespace chess {
         int8_t posx, posy;
         uint8_t comp;
 
-        if ( pieceType == "Pawn" ) {
+        if (pieceType == "Pawn") {
             posx = position.x;
             posy = position.y;
 
@@ -70,28 +70,28 @@ namespace chess {
               }
             }
             if (p.x > 0) {
-              if (p.y > 1) {
-                  if ((b[p.x - 1][p.y - 2] & 0xC0) != comp) v.push_back(p - L[2]);
-              }
-              if (p.y < 6) {
-                  if ((b[p.x - 1][p.y + 2] & 0xC0) != comp) v.push_back(p + L[3]);
-              }
+                if (p.y > 1) {
+                    if ((b[p.x - 1][p.y - 2] & 0xC0) != comp) v.push_back(p - L[2]);
+                }
+                if (p.y < 6) {
+                    if ((b[p.x - 1][p.y + 2] & 0xC0) != comp) v.push_back(p + L[3]);
+                }
             }
             if (p.x < 6) {
-              if (p.y > 0) {
-                  if ((b[p.x + 2][p.y - 1] & 0xC0) != comp) v.push_back(p - L[1]);
-              }
-              if (p.y < 7) {
-                  if ((b[p.x + 2][p.y + 1] & 0xC0) != comp) v.push_back(p + L[0]);
-              }
+                if (p.y > 0) {
+                    if ((b[p.x + 2][p.y - 1] & 0xC0) != comp) v.push_back(p - L[1]);
+                }
+                if (p.y < 7) {
+                    if ((b[p.x + 2][p.y + 1] & 0xC0) != comp) v.push_back(p + L[0]);
+                }
             }
             if (p.x < 7) {
-              if (p.y > 1) {
-                  if ((b[p.x + 1][p.y - 2] & 0xC0) != comp) v.push_back(p - L[3]);
-              }
-              if (p.y < 6) {
-                  if ((b[p.x + 1][p.y + 2] & 0xC0) != comp) v.push_back(p + L[2]);
-              }
+                if (p.y > 1) {
+                    if ((b[p.x + 1][p.y - 2] & 0xC0) != comp) v.push_back(p - L[3]);
+                }
+                if (p.y < 6) {
+                    if ((b[p.x + 1][p.y + 2] & 0xC0) != comp) v.push_back(p + L[2]);
+                }
             }
             return;
         }
@@ -105,7 +105,7 @@ namespace chess {
             this->pb_inc (position - D[0], v, -D[0], W, t);
             this->pb_inc (position - D[1], v, -D[1], W, t);
 
-            if (pieceType == "Bishop") return; // We still have more Queen moves to do
+            if (pieceType == "Bishop") return;
         }
 
         if (pieceType == "Rook" or pieceType == "Queen") {
@@ -117,13 +117,12 @@ namespace chess {
             this->pb_inc (position - D[0], v, -D[0], W, t);
             this->pb_inc (position - D[1], v, -D[1], W, t);
 
-          return;
+            return;
         }
 
-        else if ( pieceType == "King" ) {
+        if (pieceType == "King") {
             posx = position.x + 1;
             posy = position.y + 1;
-
             comp = W ? 0x40 : 0x80;
 
             // UP-RIGHT
@@ -175,9 +174,8 @@ namespace chess {
                 }
             }
             //        for (const auto& move : valid_moves) { print_pos(move); }
-          return;
+            return;
         }
-        return;
     }
     
     void MCI :: pb_inc (pos p, std::vector<pos>& v, pos inc, bool is_white, bool t) {
