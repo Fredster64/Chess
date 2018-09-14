@@ -28,7 +28,7 @@ namespace chess {
     
     void Piece::check_moves( std::vector<pos>& p, bool t=true ) { // Calls the check_moves function in the interface for this piece
         std::string type = this->get_type();
-        moveChecker.check_moves( p, t, type, position );
+        moveChecker.check_moves( p, t, type, position, is_white );
     }
     
     uint8_t Piece :: move (const pos p) {
