@@ -26,7 +26,6 @@ namespace chess {
         std::cout << (is_white ? "White " : "Black ") << this->get_type() << " at " << static_cast<char>(mci.position.x + 'A') << static_cast<int>(mci.position.y + 1) << std::endl;
     }
     
-    /* For review */
     void Piece :: check_moves (std::vector<pos>& v, bool t) { // Calls the check_moves function in the interface for this piece
         mci.check_moves (v, this->get_type(), is_white, t);
     }
