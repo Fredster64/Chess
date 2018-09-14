@@ -74,7 +74,7 @@ namespace chess {
                 counter = 0;
                 for (const auto& piece : ((game_status & 0x01) > 0) ? white_pieces : black_pieces) {
 //                    piece->print_info ();
-                    piece->check_moves (piece->valid_moves);
+                    piece->check_moves (piece->valid_moves, true);
                     for (const auto& move : piece->valid_moves) {
                         ++counter;
                     }
