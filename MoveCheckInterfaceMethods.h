@@ -13,11 +13,16 @@ namespace chess {
   // Moreover, it should make implementing promotion easier: 
   // -- Change pieceType of a pawn to the relevant piece when it becomes promoted 
   // -- Now, pawn will move as if it's the other piece
-  void MoveCheckInterface::check_moves (std::vector<pos>& v, bool t=true, std::string pieceType, pos startPos) 
+  
+  // I've also written the Queen move in terms of the Rook and Bishop ones
+  
+  void MoveCheckInterface::check_moves (std::vector<pos>& v, bool t=true, std::string pieceType, pos startPos, bool isWhite) {
   
     uint8_t** b = *pgb; // put the game board array in the current scope
   
     int8_t posx, posy;
+    uint8_t comp;
+    bool is_white = isWhite;
   
     if ( pieceType == "Pawn" ) {
     
@@ -27,7 +32,7 @@ namespace chess {
       // will work on 'check' case conditions and en-passant rules later.
       is_white ? ++posy : --posy;
 
-      uint8_t comp = is_white ? 0x80 : 0x40;
+      comp = is_white ? 0x80 : 0x40;
       if (posx < 7) {
           if ((b[posx + 1][posy] & 0xC0) == comp) {
               v.push_back({(++posx)--, posy});
@@ -57,7 +62,7 @@ namespace chess {
     else if ( pieceType == "Knight" ) {
       pos p = startPos;
       pos L[4] = {{2, 1}, {-2, 1}, {1, 2}, {-1, 2}};
-      uint8_t comp = is_white ? 0x40 : 0x80;
+      comp = is_white ? 0x40 : 0x80;
       // L-shapes: -2x-1y ; -2x+1y ; -1x-2y ; -1x+2y ; +1x-2y ; +1x+2y ; +2x-1y ; +2x+1y
       if (p.x > 1) {
           if (p.y > 0) {
@@ -95,10 +100,10 @@ namespace chess {
     }
     
     else if ( pieceType == "Bishop" || pieceType == "Queen" ) {
-        int8_t posx = startPos.x + 1;
-        int8_t posy = startPos.y + 1;
+        posx = startPos.x + 1;
+        posy = startPos.y + 1;
         
-        uint8_t comp = is_white ? 0x40 : 0x80;
+        comp = is_white ? 0x40 : 0x80;
         
         // up-left, up-right, down-left, down-right
         while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
@@ -152,9 +157,119 @@ namespace chess {
     
     // Can't use else if here, it would skip half the Queen moves
     if ( pieceType == "Rook" || pieceType == "Queen" ) {
-      
+        posx = position.x + 1;
+        posy = position.y;
+        
+        comp = is_white ? 0x40 : 0x80;
+        
+        // up, down, left, right
+        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
+            if ((b[posx][posy] & 0xC0) == comp) {
+                break;
+            } else if (b[posx][posy] > 0) {
+                v.push_back({posx, posy});
+                break;
+            } else {
+                v.push_back({posx++, posy});
+            }
+        }
+        posx = position.x - 1;
+        posy = position.y;
+        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
+            if ((b[posx][posy] & 0xC0) == comp) {
+                break;
+            } else if (b[posx][posy] > 0) {
+                v.push_back({posx, posy});
+                break;
+            } else {
+                v.push_back({posx--, posy});
+            }
+        }
+        posx = position.x;
+        posy = position.y + 1;
+        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
+            if ((b[posx][posy] & 0xC0) == comp) {
+                break;
+            } else if (b[posx][posy] > 0) {
+                v.push_back({posx, posy});
+                break;
+            } else {
+                v.push_back({posx, posy++});
+            }
+        }
+        posx = position.x;
+        posy = position.y - 1;
+        while (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
+            if ((b[posx][posy] & 0xC0) == comp) {
+                break;
+            } else if (b[posx][posy] > 0) {
+                v.push_back({posx, posy});
+                break;
+            } else {
+                v.push_back({posx, posy--});
+            }
+        }
+      return;
     }
   
-  }
+    else if ( pieceType == "King" ) {
+        posx = position.x + 1;
+        posy = position.y + 1;
+        
+        comp = is_white ? 0x40 : 0x80;
+        
+        // UP-RIGHT
+        if (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
+            if ((b[posx][posy] & 0xC0) != comp) {
+                v.push_back({posx, posy});
+            }
+        }
+        // UP
+        if (--posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
+            if ((b[posx][posy] & 0xC0) != comp) {
+                v.push_back({posx, posy});
+            }
+        }
+        // UP-LEFT
+        if (--posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
+            if ((b[posx][posy] & 0xC0) != comp) {
+                v.push_back({posx, posy});
+            }
+        }
+        // LEFT
+        if (posx >= 0 and --posy >= 0 and posx < 8 and posy < 8) {
+            if ((b[posx][posy] & 0xC0) != comp) {
+                v.push_back({posx, posy});
+            }
+        }
+        // DOWN-LEFT
+        if (posx >= 0 and --posy >= 0 and posx < 8 and posy < 8) {
+            if ((b[posx][posy] & 0xC0) != comp) {
+                v.push_back({posx, posy});
+            }
+        }
+        // DOWN
+        if (++posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
+            if ((b[posx][posy] & 0xC0) != comp) {
+                v.push_back({posx, posy});
+            }
+        }
+        // DOWN-RIGHT
+        if (++posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
+            if ((b[posx][posy] & 0xC0) != comp) {
+                v.push_back({posx, posy});
+            }
+        }
+        // RIGHT
+        if (posx >= 0 and ++posy >= 0 and posx < 8 and posy < 8) {
+            if ((b[posx][posy] & 0xC0) != comp) {
+                v.push_back({posx, posy});
+            }
+        }
+//        for (const auto& move : valid_moves) { print_pos(move);
+      return;
+    } 
+  return;
+  }// end of function defn
   
- }
+ }// end of namespace declaration
