@@ -9,10 +9,10 @@
 
 namespace chess {
     
-    uint8_t Pawn :: move (pos p) {
+    uint8_t Pawn :: move (Pos p) {
         // if first move occurs, it must be set to false.
         uint8_t** b = *pgb;
-        pos p_now = mci.position;
+        Pos p_now = this->get_pos();
         uint8_t valid = 0;
         for (const auto& m : valid_moves) {
             if (m == p) {
@@ -21,23 +21,23 @@ namespace chess {
             }
         }
         if (valid == 1) {
-            mci.first_move = false;
+            this->is_first_move (false);
             uint8_t temp = b[p_now.x][p_now.y];
             b[p_now.x][p_now.y] = 0;
             if (p.y == 0 or p.y == 7) {
                 valid |= promotion ();
             } else {
-                mci.position = p;
+                this->update_pos (p_now);
                 b[p.x][p.y] = temp;
             }
         }
         return valid;
     }
 
-    uint8_t King :: move (pos p) {
+    uint8_t King :: move (Pos p) {
         // an exception case is made for the castling move (not yet implemented).
         uint8_t** b = *pgb;
-        pos p_now = mci.position;
+        Pos p_now = this->get_pos();
         uint8_t valid = 0;
         for (const auto& m : valid_moves) {
             if (m == p) {
@@ -48,7 +48,7 @@ namespace chess {
         if (valid == 1) {
             uint8_t temp = b[p_now.x][p_now.y];
             b[p_now.x][p_now.y] = 0;
-            mci.position = p;
+            this->update_pos (p_now);
             b[p.x][p.y] = temp;
         }
         return valid;

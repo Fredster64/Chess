@@ -8,12 +8,12 @@
 
 namespace chess {
     
-    void MCI :: check_moves (std::vector<pos>& v, std::string pieceType, bool W, bool t) {
+    void MCI :: move_checker (std::vector<Pos>& v, std::string piece_type, bool w, bool t) {
 
-        // Idea is to check moves based on pieceType.
+        // Idea is to check moves based on piece_type.
         // This should lessen the code repetition.
         // Moreover, it should make implementing promotion easier:
-        // -- Change pieceType of a pawn to the relevant piece when it becomes promoted
+        // -- Change piece_type of a pawn to the relevant piece when it becomes promoted
         // -- Now, pawn will move as if it's the other piece
         // I've also written the Queen move in terms of the Rook and Bishop ones
   
@@ -22,14 +22,14 @@ namespace chess {
         int8_t posx, posy;
         uint8_t comp;
 
-        if ( pieceType == "Pawn" ) {
+        if (piece_type == "Pawn") {
             posx = position.x;
             posy = position.y;
 
             // will work on 'check' case conditions and en-passant rules later.
-            W ? ++posy : --posy;
+            w ? ++posy : --posy;
 
-            comp = W ? 0x80 : 0x40;
+            comp = w ? 0x80 : 0x40;
             if (posx < 7) {
                 if ((b[posx + 1][posy] & 0xC0) == comp) {
                     v.push_back({(++posx)--, posy});
@@ -46,7 +46,7 @@ namespace chess {
                 }
                 if (first_move) {
                     if (b[posx][posy] == 0) {
-                        W ? ++posy : --posy;
+                        w ? ++posy : --posy;
                         if (b[posx][posy] == 0) {
                             v.push_back({posx, posy});
                         }
@@ -56,10 +56,10 @@ namespace chess {
             return;
         }
 
-        if (pieceType == "Knight") {
-            pos p = position;
-            pos L[4] = {{2, 1}, {-2, 1}, {1, 2}, {-1, 2}};
-            comp = W ? 0x40 : 0x80;
+        if (piece_type == "Knight") {
+            Pos p = position;
+            Pos L[4] = {{2, 1}, {-2, 1}, {1, 2}, {-1, 2}};
+            comp = w ? 0x40 : 0x80;
             // L-shapes: -2x-1y ; -2x+1y ; -1x-2y ; -1x+2y ; +1x-2y ; +1x+2y ; +2x-1y ; +2x+1y
             if (p.x > 1) {
               if (p.y > 0) {
@@ -70,61 +70,60 @@ namespace chess {
               }
             }
             if (p.x > 0) {
-              if (p.y > 1) {
-                  if ((b[p.x - 1][p.y - 2] & 0xC0) != comp) v.push_back(p - L[2]);
-              }
-              if (p.y < 6) {
-                  if ((b[p.x - 1][p.y + 2] & 0xC0) != comp) v.push_back(p + L[3]);
-              }
+                if (p.y > 1) {
+                    if ((b[p.x - 1][p.y - 2] & 0xC0) != comp) v.push_back(p - L[2]);
+                }
+                if (p.y < 6) {
+                    if ((b[p.x - 1][p.y + 2] & 0xC0) != comp) v.push_back(p + L[3]);
+                }
             }
             if (p.x < 6) {
-              if (p.y > 0) {
-                  if ((b[p.x + 2][p.y - 1] & 0xC0) != comp) v.push_back(p - L[1]);
-              }
-              if (p.y < 7) {
-                  if ((b[p.x + 2][p.y + 1] & 0xC0) != comp) v.push_back(p + L[0]);
-              }
+                if (p.y > 0) {
+                    if ((b[p.x + 2][p.y - 1] & 0xC0) != comp) v.push_back(p - L[1]);
+                }
+                if (p.y < 7) {
+                    if ((b[p.x + 2][p.y + 1] & 0xC0) != comp) v.push_back(p + L[0]);
+                }
             }
             if (p.x < 7) {
-              if (p.y > 1) {
-                  if ((b[p.x + 1][p.y - 2] & 0xC0) != comp) v.push_back(p - L[3]);
-              }
-              if (p.y < 6) {
-                  if ((b[p.x + 1][p.y + 2] & 0xC0) != comp) v.push_back(p + L[2]);
-              }
+                if (p.y > 1) {
+                    if ((b[p.x + 1][p.y - 2] & 0xC0) != comp) v.push_back(p - L[3]);
+                }
+                if (p.y < 6) {
+                    if ((b[p.x + 1][p.y + 2] & 0xC0) != comp) v.push_back(p + L[2]);
+                }
             }
             return;
         }
 
-        if (pieceType == "Bishop" or pieceType == "Queen") {
+        if (piece_type == "Bishop" or piece_type == "Queen") {
             
-            pos D[2] = {{1, 1}, {1, -1}};
+            Pos d1[2] = {{1, 1}, {1, -1}};
             // up-left, up-right, down-left, down-right
-            this->pb_inc (position + D[0], v, D[0], W, t);
-            this->pb_inc (position + D[1], v, D[1], W, t);
-            this->pb_inc (position - D[0], v, -D[0], W, t);
-            this->pb_inc (position - D[1], v, -D[1], W, t);
+            this->pb_inc (position + d1[0], v, d1[0], w, t);
+            this->pb_inc (position + d1[1], v, d1[1], w, t);
+            this->pb_inc (position - d1[0], v, -d1[0], w, t);
+            this->pb_inc (position - d1[1], v, -d1[1], w, t);
 
-            if (pieceType == "Bishop") return; // We still have more Queen moves to do
+            if (piece_type == "Bishop") return;
         }
 
-        if (pieceType == "Rook" or pieceType == "Queen") {
-            pos D[2] = {{1, 0}, {0, 1}};
+        if (piece_type == "Rook" or piece_type == "Queen") {
+            Pos d2[2] = {{1, 0}, {0, 1}};
 
             // up, down, left, right
-            this->pb_inc (position + D[0], v, D[0], W, t);
-            this->pb_inc (position + D[1], v, D[1], W, t);
-            this->pb_inc (position - D[0], v, -D[0], W, t);
-            this->pb_inc (position - D[1], v, -D[1], W, t);
+            this->pb_inc (position + d2[0], v, d2[0], w, t);
+            this->pb_inc (position + d2[1], v, d2[1], w, t);
+            this->pb_inc (position - d2[0], v, -d2[0], w, t);
+            this->pb_inc (position - d2[1], v, -d2[1], w, t);
 
-          return;
+            return;
         }
 
-        else if ( pieceType == "King" ) {
+        if (piece_type == "King") {
             posx = position.x + 1;
             posy = position.y + 1;
-
-            comp = W ? 0x40 : 0x80;
+            comp = w ? 0x40 : 0x80;
 
             // UP-RIGHT
             if (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {
@@ -175,12 +174,11 @@ namespace chess {
                 }
             }
             //        for (const auto& move : valid_moves) { print_pos(move); }
-          return;
+            return;
         }
-        return;
     }
     
-    void MCI :: pb_inc (pos p, std::vector<pos>& v, pos inc, bool is_white, bool t) {
+    void MCI :: pb_inc (Pos p, std::vector<Pos>& v, Pos inc, bool is_white, bool t) {
         uint8_t** b = *gb; // put the game board array in the current scope
         uint8_t comp = is_white ? 0x40 : 0x80;
         while (p.x >= 0 and p.y >= 0 and p.x < 8 and p.y < 8) {

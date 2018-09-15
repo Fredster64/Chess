@@ -9,71 +9,70 @@
 
 namespace chess {
     
-    struct pos {
+    typedef struct Position {
         int8_t x;
         int8_t y;
         void print_pos (void) { std::cout << static_cast<char>(x + 'A') << static_cast<int>(y + 1) << std::endl; }
-    };
-    bool operator==(const pos& p1, const pos& p2) { // define pos equality
+    } Pos;
+    bool operator==(const Pos& p1, const Pos& p2) { // define pos equality
         return (p1.x == p2.x) and (p1.y == p2.y);
     }
-    bool operator!=(const pos& p1, const pos& p2) { // define pos inequality
+    bool operator!=(const Pos& p1, const Pos& p2) { // define pos inequality
         return (p1.x != p2.x) or (p1.y != p2.y);
     }
-    pos operator+(const pos& p1, const pos& p2) { // define pos addition
+    Pos operator+(const Pos& p1, const Pos& p2) { // define pos addition
         return { static_cast<int8_t>(p1.x + p2.x), static_cast<int8_t>(p1.y + p2.y) };
     }
-    pos operator-(const pos& p1, const pos& p2) { // define pos subtraction
+    Pos operator-(const Pos& p1, const Pos& p2) { // define pos subtraction
         return { static_cast<int8_t>(p1.x - p2.x), static_cast<int8_t>(p1.y - p2.y) };
     }
-    pos operator+(const pos& p) { // define unary positive
-        return { static_cast<int8_t>(p.x), static_cast<int8_t>(-p.y) };
+    Pos operator+(const Pos& p) { // define unary positive
+        return { static_cast<int8_t>(p.x), static_cast<int8_t>(p.y) };
     }
-    pos operator-(const pos& p) { // define unary negative
+    Pos operator-(const Pos& p) { // define unary negative
         return { static_cast<int8_t>(-p.x), static_cast<int8_t>(-p.y) };
     }
-    void operator+=(pos& p1, const pos& p2) { // define assignment addition
+    void operator+=(Pos& p1, const Pos& p2) { // define assignment addition
         p1 = p1 + p2;
     }
-    void operator-=(pos& p1, const pos& p2) { // define assignment subtraction
+    void operator-=(Pos& p1, const Pos& p2) { // define assignment subtraction
         p1 = p1 - p2;
     }
     
-    struct MovementCheckerInterface { // Movement-Checker Interface
-        void check_moves (std::vector<pos>& v, std::string pieceType, bool W, bool t=true); // Handles movement of all pieces
-        void pb_inc (pos p, std::vector<pos>& v, pos inc, bool is_white, bool t);
-        pos position;
+    typedef struct MovementCheckerInterface { // Movement-Checker Interface
+        void move_checker (std::vector<Pos>& v, std::string piece_type, bool w, bool t=true); // Handles movement of all pieces
+        void pb_inc (Pos p, std::vector<Pos>& v, Pos inc, bool is_white, bool t);
+        Pos position;
         bool first_move;
         uint8_t*** gb; // *gb = board, gb = &board.
-    };
-    
-    typedef MovementCheckerInterface MCI;
+    } MCI;
     
     /* Classes for the Game Pieces. Created by the Engine directly. */
     class Piece {
     public:
-        Piece (const bool player_colour, const pos coordinates, uint8_t& status_bits, uint8_t**& gb); // constructor
+        Piece (const bool player_colour, const Pos coordinates, uint8_t**& gb); // constructor
         ~Piece (void); // destructor
-        // Implementing an MCI to control piece movement
-        MCI mci;
-        std::vector<pos> valid_moves;
-        uint8_t check_gs (void) { return *pgs; }
-        pos check_position (void) { return mci.position; }
+        std::vector<Pos> valid_moves;
+        Pos check_position (void) { return mci.position; }
         void print_info (void);
-        void check_moves (std::vector<pos>& v, bool t=true);
+        void check_moves (std::vector<Pos>& v, bool t=true);
         virtual std::string get_type (void) = 0; // pure polymorphic function
-        virtual uint8_t move (const pos p); // polymorphic, default for N, B, R, Q.
+        virtual uint8_t move (const Pos p); // polymorphic, default for N, B, R, Q.
     protected:
+        Pos get_pos () { return mci.position; }
+        void update_pos (Pos p) { mci.position = p; }
+        void is_first_move (bool x) { mci.first_move = x; }
         bool is_white; // stores if the piece is White (1) or Black (0).
-        uint8_t* pgs; // *pgs = game_status, pgs = &game_status.
         uint8_t*** pgb; // *pgb = board, pgb = &board.
     private:
+        // Implementing an MCI to control piece movement
+        MCI mci;
     };
     
     class Pawn : public Piece {
     public:
         using Piece :: Piece;
-        uint8_t move (const pos p);
+        uint8_t move (const Pos p);
         std::string get_type (void) { return "Pawn"; }
     protected:
     private:
@@ -115,7 +114,7 @@ namespace chess {
     class King : public Piece {
     public:
         using Piece :: Piece;
-        uint8_t move (const pos p);
+        uint8_t move (const Pos p);
         std::string get_type (void) { return "King"; }
     protected:
     private:
@@ -176,16 +175,16 @@ namespace chess {
         void place_rooks (const bool c, const int8_t r);
         void place_royals (const bool c, const int8_t r);
         // Functions that interact with the Pieces
-        bool move_piece (pos pfrom, pos pto);
+        bool move_piece (Pos pfrom, Pos pto);
         bool in_check (bool c);
         // Prints the current board
         void print_board (void);
         // One-Line Functions
-        pos char2int (const char* p) { return {static_cast<int8_t>(p[0] - 'A'), static_cast<int8_t>(p[1] - '1')}; }
+        Pos char2int (const char* p) { return {static_cast<int8_t>(p[0] - 'A'), static_cast<int8_t>(p[1] - '1')}; }
         void pbp (std::vector<PiecePtr>& v1, std::vector<PiecePtr>& v2, const PiecePtr& pp, const bool c) { c ? v1.push_back(std::move(pp)) : v2.push_back(std::move(pp)); }
-        void rm_dlt (std::vector<PiecePtr>& v, const pos p2) {
+        void rm_dlt (std::vector<PiecePtr>& v, const Pos p2) {
             v.erase (std::remove_if (v.begin(), v.end(), [p2] (PiecePtr piece) -> bool {
-                pos p = piece->check_position();
+                Pos p = piece->check_position();
                 if (p == p2) return true;
                 return false;
             }), v.end());
