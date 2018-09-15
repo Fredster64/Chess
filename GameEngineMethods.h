@@ -180,6 +180,7 @@ namespace chess {
         return r;
     }
     
+    /* We don't need in_check in the GameEngine
     bool GameEngine :: in_check (bool c) {
         // find all cells that the king cannot exist in. If the current cell is in the list, then the king is in check.
         uint8_t k_score = c ? 0x60 : 0xA0;
@@ -204,7 +205,7 @@ namespace chess {
         
         // check if the k_pos is in v.
         return vec_search<Pos>(vec, k_pos);
-    }
+    } */
     
     void GameEngine :: print_board (void) {
         std::cout << std::endl;
@@ -236,7 +237,7 @@ namespace chess {
             std::cout << " " << c << " ";
         }
         std::cout << std::endl << std::endl;
-    }
+    } 
     
     /****************************************************/
     
