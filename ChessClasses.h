@@ -176,7 +176,7 @@ namespace chess {
         void place_royals (const bool c, const int8_t r);
         // Functions that interact with the Pieces
         bool move_piece (Pos pfrom, Pos pto);
-        bool in_check (bool c);
+        //bool in_check (bool c); <---- Moved to ChessIncludes.h
         // Prints the current board
         void print_board (void);
         // One-Line Functions
