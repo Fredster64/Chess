@@ -8,12 +8,12 @@
 
 namespace chess {
     
-    void MCI :: check_moves (std::vector<pos>& v, std::string pieceType, bool W, bool t) {
+    void MCI :: check_moves (std::vector<Pos>& v, std::string piece_type, bool W, bool t) {
 
-        // Idea is to check moves based on pieceType.
+        // Idea is to check moves based on piece_type.
         // This should lessen the code repetition.
         // Moreover, it should make implementing promotion easier:
-        // -- Change pieceType of a pawn to the relevant piece when it becomes promoted
+        // -- Change piece_type of a pawn to the relevant piece when it becomes promoted
         // -- Now, pawn will move as if it's the other piece
         // I've also written the Queen move in terms of the Rook and Bishop ones
   
@@ -22,7 +22,7 @@ namespace chess {
         int8_t posx, posy;
         uint8_t comp;
 
-        if (pieceType == "Pawn") {
+        if (piece_type == "Pawn") {
             posx = position.x;
             posy = position.y;
 
@@ -56,9 +56,9 @@ namespace chess {
             return;
         }
 
-        if (pieceType == "Knight") {
-            pos p = position;
-            pos L[4] = {{2, 1}, {-2, 1}, {1, 2}, {-1, 2}};
+        if (piece_type == "Knight") {
+            Pos p = position;
+            Pos L[4] = {{2, 1}, {-2, 1}, {1, 2}, {-1, 2}};
             comp = W ? 0x40 : 0x80;
             // L-shapes: -2x-1y ; -2x+1y ; -1x-2y ; -1x+2y ; +1x-2y ; +1x+2y ; +2x-1y ; +2x+1y
             if (p.x > 1) {
@@ -96,20 +96,20 @@ namespace chess {
             return;
         }
 
-        if (pieceType == "Bishop" or pieceType == "Queen") {
+        if (piece_type == "Bishop" or piece_type == "Queen") {
             
-            pos D[2] = {{1, 1}, {1, -1}};
+            Pos D[2] = {{1, 1}, {1, -1}};
             // up-left, up-right, down-left, down-right
             this->pb_inc (position + D[0], v, D[0], W, t);
             this->pb_inc (position + D[1], v, D[1], W, t);
             this->pb_inc (position - D[0], v, -D[0], W, t);
             this->pb_inc (position - D[1], v, -D[1], W, t);
 
-            if (pieceType == "Bishop") return;
+            if (piece_type == "Bishop") return;
         }
 
-        if (pieceType == "Rook" or pieceType == "Queen") {
-            pos D[2] = {{1, 0}, {0, 1}};
+        if (piece_type == "Rook" or piece_type == "Queen") {
+            Pos D[2] = {{1, 0}, {0, 1}};
 
             // up, down, left, right
             this->pb_inc (position + D[0], v, D[0], W, t);
@@ -120,7 +120,7 @@ namespace chess {
             return;
         }
 
-        if (pieceType == "King") {
+        if (piece_type == "King") {
             posx = position.x + 1;
             posy = position.y + 1;
             comp = W ? 0x40 : 0x80;
@@ -178,7 +178,7 @@ namespace chess {
         }
     }
     
-    void MCI :: pb_inc (pos p, std::vector<pos>& v, pos inc, bool is_white, bool t) {
+    void MCI :: pb_inc (Pos p, std::vector<Pos>& v, Pos inc, bool is_white, bool t) {
         uint8_t** b = *gb; // put the game board array in the current scope
         uint8_t comp = is_white ? 0x40 : 0x80;
         while (p.x >= 0 and p.y >= 0 and p.x < 8 and p.y < 8) {

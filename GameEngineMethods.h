@@ -56,7 +56,7 @@ namespace chess {
         while ((game_status & 0xC0) == 0) {
             allowed = false;
             char p[2];
-            pos pin, pout;
+            Pos pin, pout;
             std::cout << "Please enter the coordinates of the piece you are moving." << std::endl;
             std::cin >> p;
             pin = char2int(p);
@@ -135,11 +135,11 @@ namespace chess {
         board[4][r] |= c ? 0x60 : 0xA0;
     }
     
-    bool GameEngine :: move_piece (pos pfrom, pos pto) {
+    bool GameEngine :: move_piece (Pos pfrom, Pos pto) {
         bool r = false;
         uint8_t pr;
         for (const auto& piece : ((game_status & 0x1) > 0 ? white_pieces : black_pieces)) {
-            pos temp = piece->check_position();
+            Pos temp = piece->check_position();
             if ((pfrom.x == temp.x) and (pfrom.y == temp.y)) { pr = piece->move(pto); }
             piece->valid_moves.clear();
         }
@@ -184,8 +184,8 @@ namespace chess {
         // find all cells that the king cannot exist in. If the current cell is in the list, then the king is in check.
         uint8_t k_score = c ? 0x60 : 0xA0;
         uint8_t comp = c ? 0x40 : 0x80;
-        pos k_pos;
-        std::vector<pos> vec;
+        Pos k_pos;
+        std::vector<Pos> vec;
         // search for the King's cell
         for (int8_t j = 0; j < 8; ++j) {
             for (int8_t i = 0; i < 8; ++i) {
@@ -197,13 +197,13 @@ namespace chess {
         }
         // look for all cells that can be attacked by the opponent
         for (const auto& piece : (c ? black_pieces : white_pieces)) { piece->check_moves (vec, false); }
-        rm_dupes<pos>(vec);
+        rm_dupes<Pos>(vec);
         for (auto& cell : vec) {
             cell.print_pos();
         }
         
         // check if the k_pos is in v.
-        return vec_search<pos>(vec, k_pos);
+        return vec_search<Pos>(vec, k_pos);
     }
     
     void GameEngine :: print_board (void) {
