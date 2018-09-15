@@ -46,6 +46,12 @@ namespace chess {
             b[p_now.x][p_now.y] = 0;
             mci.position = p;
             b[p.x][p.y] = temp;
+            /* We can implement 'check' here: 
+              -- Keep a copy of p_now 
+              -- Perform a 'check' test (method in GameEngine I think, could move somewhere else to make it easily accessible)
+              -- If we're in check, revert back to pre-move board position (i.e. swap p and p_now back)
+              -- Print some kind of "you're in check!" message, and try again
+              -- Set valid = 0 so that the GameEngine thinks we've made an invalid move */
         }
         return valid;
     }
