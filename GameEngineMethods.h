@@ -39,11 +39,11 @@ namespace chess {
     
     GameEngine :: ~GameEngine (void) {
         for (uint8_t i = 0; i < 8; ++i) {
-            delete board[i];
             board[i] = nullptr;
+            delete board[i];
         }
-        delete board;
         board = nullptr;
+        delete board;
         for (auto& p : white_pieces) { p = nullptr; }
         white_pieces.clear();
         for (auto& p : black_pieces) { p = nullptr; }
@@ -97,7 +97,7 @@ namespace chess {
     void GameEngine :: place_pawns (const bool c, const int8_t r) {
         for (int8_t i = 0; i < 8; ++i) {
             PawnPtr pawn (new Pawn (c, {i, r}, board));
-            this->pbp (white_pieces, black_pieces, pawn, c);
+            this->pb_ptr (white_pieces, black_pieces, pawn, c);
             board[i][r] |= c ? 0x41 : 0x81;
         }
     }
@@ -105,7 +105,7 @@ namespace chess {
     void GameEngine :: place_knights (const bool c, const int8_t r) {
         for (int8_t i = 1; i < 8; i += 5) {
             KnightPtr knight (new Knight (c, {i, r}, board));
-            this->pbp (white_pieces, black_pieces, knight, c);
+            this->pb_ptr (white_pieces, black_pieces, knight, c);
             board[i][r] |= c ? 0x42 : 0x82;
         }
     }
@@ -113,7 +113,7 @@ namespace chess {
     void GameEngine :: place_bishops (const bool c, const int8_t r) {
         for (int8_t i = 2; i < 8; i += 3) {
             BishopPtr bishop (new Bishop (c, {i, r}, board));
-            this->pbp (white_pieces, black_pieces, bishop, c);
+            this->pb_ptr (white_pieces, black_pieces, bishop, c);
             board[i][r] |= c ? 0x44 : 0x84;
         }
     }
@@ -121,17 +121,17 @@ namespace chess {
     void GameEngine :: place_rooks (const bool c, const int8_t r) {
         for (int8_t i = 0; i < 8; i+=7) {
             RookPtr rook (new Rook (c, {i, r}, board));
-            this->pbp (white_pieces, black_pieces, rook, c);
+            this->pb_ptr (white_pieces, black_pieces, rook, c);
             board[i][r] |= c ? 0x48 : 0x88;
         }
     }
     
     void GameEngine :: place_royals (const bool c, const int8_t r) {
         QueenPtr queen (new Queen (c, {3, r}, board));
-        this->pbp (white_pieces, black_pieces, queen, c);
+        this->pb_ptr (white_pieces, black_pieces, queen, c);
         board[3][r] |= c ? 0x50 : 0x90;
         KingPtr king (new King (c, {4, r}, board));
-        this->pbp (white_pieces, black_pieces, king, c);
+        this->pb_ptr (white_pieces, black_pieces, king, c);
         board[4][r] |= c ? 0x60 : 0xA0;
     }
     
@@ -152,25 +152,25 @@ namespace chess {
                 case 0x01: {
                     KnightPtr knight (new Knight (is_white, pto, board));
                     board[pto.x][pto.y] = (c ? 0x42 : 0x82);
-                    this->pbp (white_pieces, black_pieces, knight, c);
+                    this->pb_ptr (white_pieces, black_pieces, knight, c);
                     break;
                 }
                 case 0x02: {
                     BishopPtr bishop (new Bishop (is_white, pto, board));
                     board[pto.x][pto.y] = (c ? 0x44 : 0x84);
-                    this->pbp (white_pieces, black_pieces, bishop, c);
+                    this->pb_ptr (white_pieces, black_pieces, bishop, c);
                     break;
                 }
                 case 0x04: {
                     RookPtr rook (new Rook (is_white, pto, board));
                     board[pto.x][pto.y] = (c ? 0x48 : 0x88);
-                    this->pbp (white_pieces, black_pieces, rook, c);
+                    this->pb_ptr (white_pieces, black_pieces, rook, c);
                     break;
                 }
                 case 0x08: {
                     QueenPtr queen (new Queen (is_white, pto, board));
                     board[pto.x][pto.y] = (c ? 0x50 : 0x90);
-                    this->pbp (white_pieces, black_pieces, queen, c);
+                    this->pb_ptr (white_pieces, black_pieces, queen, c);
                     break;
                 }
             }
@@ -198,9 +198,9 @@ namespace chess {
         // look for all cells that can be attacked by the opponent
         for (const auto& piece : (c ? black_pieces : white_pieces)) { piece->check_moves (vec, false); }
         rm_dupes<Pos>(vec);
-        for (auto& cell : vec) {
-            cell.print_pos();
-        }
+//        for (auto& cell : vec) {
+//            cell.print_pos();
+//        }
         
         // check if the k_pos is in v.
         return vec_search<Pos>(vec, k_pos);

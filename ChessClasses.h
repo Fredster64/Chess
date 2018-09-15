@@ -40,7 +40,7 @@ namespace chess {
     }
     
     typedef struct MovementCheckerInterface { // Movement-Checker Interface
-        void move_checker (std::vector<Pos>& v, std::string piece_type, bool w, bool t=true); // Handles movement of all pieces
+        void move_checker (std::vector<Pos>& v, std::string piece_type, bool w, bool t); // Handles movement of all pieces
         void pb_inc (Pos p, std::vector<Pos>& v, Pos inc, bool is_white, bool t);
         Pos position;
         bool first_move;
@@ -56,68 +56,68 @@ namespace chess {
         Pos check_position (void) { return mci.position; }
         void print_info (void);
         void check_moves (std::vector<Pos>& v, bool t=true);
-        virtual std::string get_type (void) = 0; // pure polymorphic function
         virtual uint8_t move (const Pos p); // polymorphic, default for N, B, R, Q.
     protected:
+        bool is_white; // stores if the piece is White (1) or Black (0).
+        uint8_t*** pgb; // *pgb = board, pgb = &board.
+        /* One-Line Functions */
         Pos get_pos () { return mci.position; }
         void update_pos (Pos p) { mci.position = p; }
         void is_first_move (bool x) { mci.first_move = x; }
-        bool is_white; // stores if the piece is White (1) or Black (0).
-        uint8_t*** pgb; // *pgb = board, pgb = &board.
     private:
-        // Implementing an MCI to control piece movement
-        MCI mci;
+        MCI mci; // Piece movement controller
+        virtual std::string get_type (void) = 0; // pure polymorphic function
     };
     
     class Pawn : public Piece {
     public:
+    protected:
+    private:
         using Piece :: Piece;
         uint8_t move (const Pos p);
         std::string get_type (void) { return "Pawn"; }
-    protected:
-    private:
         uint8_t promotion (void);
     };
     
     class Knight : public Piece {
     public:
-        using Piece :: Piece;
-        std::string get_type (void) { return "Knight"; }
     protected:
     private:
+        using Piece :: Piece;
+        std::string get_type (void) { return "Knight"; }
     };
     
     class Bishop : public Piece {
     public:
-        using Piece :: Piece;
-        std::string get_type (void) { return "Bishop"; }
     protected:
     private:
+        using Piece :: Piece;
+        std::string get_type (void) { return "Bishop"; }
     };
     
     class Rook : public Piece {
     public:
-        using Piece :: Piece;
-        std::string get_type (void) { return "Rook"; }
     protected:
     private:
+        using Piece :: Piece;
+        std::string get_type (void) { return "Rook"; }
     };
     
     class Queen : public Piece {
     public:
-        using Piece :: Piece;
-        std::string get_type (void) { return "Queen"; }
     protected:
     private:
+        using Piece :: Piece;
+        std::string get_type (void) { return "Queen"; }
     };
     
     class King : public Piece {
     public:
+    protected:
+    private:
         using Piece :: Piece;
         uint8_t move (const Pos p);
         std::string get_type (void) { return "King"; }
-    protected:
-    private:
     };
     /****************************************************************/
     
@@ -181,7 +181,7 @@ namespace chess {
         void print_board (void);
         // One-Line Functions
         Pos char2int (const char* p) { return {static_cast<int8_t>(p[0] - 'A'), static_cast<int8_t>(p[1] - '1')}; }
-        void pbp (std::vector<PiecePtr>& v1, std::vector<PiecePtr>& v2, const PiecePtr& pp, const bool c) { c ? v1.push_back(std::move(pp)) : v2.push_back(std::move(pp)); }
+        void pb_ptr (std::vector<PiecePtr>& v1, std::vector<PiecePtr>& v2, const PiecePtr& pp, const bool c) { c ? v1.push_back(std::move(pp)) : v2.push_back(std::move(pp)); }
         void rm_dlt (std::vector<PiecePtr>& v, const Pos p2) {
             v.erase (std::remove_if (v.begin(), v.end(), [p2] (PiecePtr piece) -> bool {
                 Pos p = piece->check_position();

@@ -30,22 +30,22 @@ namespace chess {
         mci.move_checker (v, this->get_type(), is_white, t);
     }
     
-    uint8_t Piece :: move (const Pos p) {
+    uint8_t Piece :: move (const Pos p_to) {
         // the default function for moving. Exceptions only for p and K.
         uint8_t** b = *pgb;
-        Pos p_now = mci.position;
+        Pos p_from = this->get_pos ();
         uint8_t valid = 0;
         for (const auto& m : valid_moves) {
-            if (m == p) {
+            if (m == p_to) {
                 valid = 1;
                 break;
             }
         }
         if (valid == 1) {
-            uint8_t temp = b[p_now.x][p_now.y];
-            b[p_now.x][p_now.y] = 0;
-            mci.position = p;
-            b[p.x][p.y] = temp;
+            uint8_t temp = b[p_from.x][p_from.y];
+            b[p_from.x][p_from.y] = 0;
+            this->update_pos (p_to);
+            b[p_to.x][p_to.y] = temp;
         }
         return valid;
     }
