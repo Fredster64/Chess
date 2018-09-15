@@ -8,7 +8,7 @@
 
 namespace chess {
     
-    void MCI :: check_moves (std::vector<Pos>& v, std::string piece_type, bool W, bool t) {
+    void MCI :: move_checker (std::vector<Pos>& v, std::string piece_type, bool w, bool t) {
 
         // Idea is to check moves based on piece_type.
         // This should lessen the code repetition.
@@ -27,9 +27,9 @@ namespace chess {
             posy = position.y;
 
             // will work on 'check' case conditions and en-passant rules later.
-            W ? ++posy : --posy;
+            w ? ++posy : --posy;
 
-            comp = W ? 0x80 : 0x40;
+            comp = w ? 0x80 : 0x40;
             if (posx < 7) {
                 if ((b[posx + 1][posy] & 0xC0) == comp) {
                     v.push_back({(++posx)--, posy});
@@ -46,7 +46,7 @@ namespace chess {
                 }
                 if (first_move) {
                     if (b[posx][posy] == 0) {
-                        W ? ++posy : --posy;
+                        w ? ++posy : --posy;
                         if (b[posx][posy] == 0) {
                             v.push_back({posx, posy});
                         }
@@ -59,7 +59,7 @@ namespace chess {
         if (piece_type == "Knight") {
             Pos p = position;
             Pos L[4] = {{2, 1}, {-2, 1}, {1, 2}, {-1, 2}};
-            comp = W ? 0x40 : 0x80;
+            comp = w ? 0x40 : 0x80;
             // L-shapes: -2x-1y ; -2x+1y ; -1x-2y ; -1x+2y ; +1x-2y ; +1x+2y ; +2x-1y ; +2x+1y
             if (p.x > 1) {
               if (p.y > 0) {
@@ -98,24 +98,24 @@ namespace chess {
 
         if (piece_type == "Bishop" or piece_type == "Queen") {
             
-            Pos D[2] = {{1, 1}, {1, -1}};
+            Pos d1[2] = {{1, 1}, {1, -1}};
             // up-left, up-right, down-left, down-right
-            this->pb_inc (position + D[0], v, D[0], W, t);
-            this->pb_inc (position + D[1], v, D[1], W, t);
-            this->pb_inc (position - D[0], v, -D[0], W, t);
-            this->pb_inc (position - D[1], v, -D[1], W, t);
+            this->pb_inc (position + d1[0], v, d1[0], w, t);
+            this->pb_inc (position + d1[1], v, d1[1], w, t);
+            this->pb_inc (position - d1[0], v, -d1[0], w, t);
+            this->pb_inc (position - d1[1], v, -d1[1], w, t);
 
             if (piece_type == "Bishop") return;
         }
 
         if (piece_type == "Rook" or piece_type == "Queen") {
-            Pos D[2] = {{1, 0}, {0, 1}};
+            Pos d2[2] = {{1, 0}, {0, 1}};
 
             // up, down, left, right
-            this->pb_inc (position + D[0], v, D[0], W, t);
-            this->pb_inc (position + D[1], v, D[1], W, t);
-            this->pb_inc (position - D[0], v, -D[0], W, t);
-            this->pb_inc (position - D[1], v, -D[1], W, t);
+            this->pb_inc (position + d2[0], v, d2[0], w, t);
+            this->pb_inc (position + d2[1], v, d2[1], w, t);
+            this->pb_inc (position - d2[0], v, -d2[0], w, t);
+            this->pb_inc (position - d2[1], v, -d2[1], w, t);
 
             return;
         }
@@ -123,7 +123,7 @@ namespace chess {
         if (piece_type == "King") {
             posx = position.x + 1;
             posy = position.y + 1;
-            comp = W ? 0x40 : 0x80;
+            comp = w ? 0x40 : 0x80;
 
             // UP-RIGHT
             if (posx >= 0 and posy >= 0 and posx < 8 and posy < 8) {

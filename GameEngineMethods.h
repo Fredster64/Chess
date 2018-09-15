@@ -6,8 +6,8 @@
 #include <string>
 #include <memory>
 
-#include "ChessIncludes.h" // for function rm_dlt ();
-#include "ChessClasses.h" // for GameEngine definition
+#include "ChessIncludes.h"
+#include "ChessClasses.h"
 
 namespace chess {
     

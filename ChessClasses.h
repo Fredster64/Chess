@@ -40,7 +40,7 @@ namespace chess {
     }
     
     typedef struct MovementCheckerInterface { // Movement-Checker Interface
-        void check_moves (std::vector<Pos>& v, std::string piece_type, bool W, bool t=true); // Handles movement of all pieces
+        void move_checker (std::vector<Pos>& v, std::string piece_type, bool w, bool t=true); // Handles movement of all pieces
         void pb_inc (Pos p, std::vector<Pos>& v, Pos inc, bool is_white, bool t);
         Pos position;
         bool first_move;
