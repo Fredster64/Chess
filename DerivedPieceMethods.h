@@ -7,13 +7,6 @@
 #include "ChessClasses.h" // for Class Definitions
 #include "PieceMethods.h" // Not sure if necessary but just in case (polymorphism)
 
-/* We can implement 'check' in 'move': 
-  -- Keep a copy of p_now 
-  -- Perform a 'check' test (method in GameEngine I think, could move somewhere else to make it easily accessible)
-  -- If we're in check, revert back to pre-move board position (i.e. swap p and p_now back)
-  -- Print some kind of "you're in check!" message, and try again
-  -- Set valid = 0 so that the GameEngine thinks we've made an invalid move */
-
 namespace chess {
     
     uint8_t Pawn :: move (Pos p) {
