@@ -60,7 +60,7 @@ namespace chess {
         
         // Does the check test and invalidates move if necessary
         // Returns valid
-        uint8_t if_in_check (bool is_white, unit8_t** b, Pos p_before, Pos p_after);
+        uint8_t if_in_check (Pos p_before, Pos p_after);
         
         virtual uint8_t move (const Pos p); // polymorphic, default for N, B, R, Q.
     protected:
