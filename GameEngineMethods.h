@@ -83,7 +83,7 @@ namespace chess {
             // check if valid moves exist:
             if (counter == 0) { game_status |= 0x80; }
             // check if in 'Check':
-            if (in_check((game_status & 0x01) > 0)) {
+            if (in_check( (game_status & 0x01) > 0, this->board)) { // Changed to pass board to function
                 game_status |= 0x20;
                 std::cout << "Check." << std::endl;
             } else {
@@ -180,33 +180,8 @@ namespace chess {
         return r;
     }
     
-    /* We don't need in_check in the GameEngine
-    bool GameEngine :: in_check (bool c) {
-        // find all cells that the king cannot exist in. If the current cell is in the list, then the king is in check.
-        uint8_t k_score = c ? 0x60 : 0xA0;
-        uint8_t comp = c ? 0x40 : 0x80;
-        Pos k_pos;
-        std::vector<Pos> vec;
-        // search for the King's cell
-        for (int8_t j = 0; j < 8; ++j) {
-            for (int8_t i = 0; i < 8; ++i) {
-                if ((board[i][j] & k_score) == k_score) {
-                    k_pos = {i, j};
-                    break;
-                }
-            }
-        }
-        // look for all cells that can be attacked by the opponent
-        for (const auto& piece : (c ? black_pieces : white_pieces)) { piece->check_moves (vec, false); }
-        rm_dupes<Pos>(vec);
-        for (auto& cell : vec) {
-            cell.print_pos();
-        }
-        
-        // check if the k_pos is in v.
-        return vec_search<Pos>(vec, k_pos);
-    } */
-    
+    // We don't need in_check in the GameEngine anymore
+   
     void GameEngine :: print_board (void) {
         std::cout << std::endl;
         uint8_t sq;
