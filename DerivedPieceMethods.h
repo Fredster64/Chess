@@ -9,47 +9,49 @@
 
 namespace chess {
     
-    uint8_t Pawn :: move (pos p) {
+    uint8_t Pawn :: move (Pos p_to) {
         // if first move occurs, it must be set to false.
         uint8_t** b = *pgb;
-        pos p_now = mci.position;
+        Pos p_from = this->get_pos ();
+        p_from.print_pos ();
+        p_to.print_pos ();
         uint8_t valid = 0;
         for (const auto& m : valid_moves) {
-            if (m == p) {
+            if (m == p_to) {
                 valid = 1;
                 break;
             }
         }
         if (valid == 1) {
-            mci.first_move = false;
-            uint8_t temp = b[p_now.x][p_now.y];
-            b[p_now.x][p_now.y] = 0;
-            if (p.y == 0 or p.y == 7) {
+            this->is_first_move (false);
+            uint8_t temp = b[p_from.x][p_from.y];
+            b[p_from.x][p_from.y] = 0;
+            if (p_to.y == 0 or p_to.y == 7) {
                 valid |= promotion ();
             } else {
-                mci.position = p;
-                b[p.x][p.y] = temp;
+                this->update_pos (p_to);
+                b[p_to.x][p_to.y] = temp;
             }
         }
         return valid;
     }
 
-    uint8_t King :: move (pos p) {
+    uint8_t King :: move (Pos p_to) {
         // an exception case is made for the castling move (not yet implemented).
         uint8_t** b = *pgb;
-        pos p_now = mci.position;
+        Pos p_from = this->get_pos ();
         uint8_t valid = 0;
         for (const auto& m : valid_moves) {
-            if (m == p) {
+            if (m == p_to) {
                 valid = 1;
                 break;
             }
         }
         if (valid == 1) {
-            uint8_t temp = b[p_now.x][p_now.y];
-            b[p_now.x][p_now.y] = 0;
-            mci.position = p;
-            b[p.x][p.y] = temp;
+            uint8_t temp = b[p_from.x][p_from.y];
+            b[p_from.x][p_from.y] = 0;
+            this->update_pos (p_to);
+            b[p_to.x][p_to.y] = temp;
         }
         return valid;
     }
