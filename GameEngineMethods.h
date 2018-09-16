@@ -198,9 +198,7 @@ namespace chess {
         // look for all cells that can be attacked by the opponent
         for (const auto& piece : (c ? black_pieces : white_pieces)) { piece->check_moves (vec, false); }
         rm_dupes<Pos>(vec);
-//        for (auto& cell : vec) {
-//            cell.print_pos();
-//        }
+        for (auto& cell : vec) { cell.print_pos(); }
         
         // check if the k_pos is in v.
         return vec_search<Pos>(vec, k_pos);

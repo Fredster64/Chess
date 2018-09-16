@@ -161,7 +161,7 @@ namespace chess {
                     v.push_back({posx, posy});
                 }
             }
-            for (auto& move : v) { move.print_pos(); }
+//            for (auto& move : v) { move.print_pos(); }
             return;
         }
     }
