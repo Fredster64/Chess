@@ -61,15 +61,14 @@ namespace chess {
         Piece (const bool player_colour, const Pos coordinates, LM& last_move, uint8_t**& gb); // constructor
         ~Piece (void); // destructor
         std::vector<Pos> valid_moves;
-        Pos check_position (void) { return mci.position; }
-        Pos get_pos () { return mci.position; }
+        Pos get_pos (void) { return mci.position; }
         void print_info (void);
         void check_moves (std::vector<Pos>& v, bool t=true);
         virtual uint8_t move (const Pos p); // polymorphic, default for N, B, R, Q.
     protected:
         bool is_white; // stores if the piece is White (1) or Black (0).
         /* One-Line Functions */
-        uint8_t** get_board () { return *mci.pgb; }
+        uint8_t** get_board (void) { return *mci.pgb; }
         void is_first_move (bool x) { mci.first_move = x; }
         void update_pos (Pos p) { mci.position = p; }
         void update_last_move (const Pos p_f, const Pos p_t, const std::string& s_pt) { *mci.lm_ptr = {p_f, p_t, s_pt}; }
@@ -195,7 +194,7 @@ namespace chess {
         void pb_ptr (std::vector<PiecePtr>& v1, std::vector<PiecePtr>& v2, const PiecePtr& pp, const bool c) { c ? v1.push_back(std::move(pp)) : v2.push_back(std::move(pp)); }
         void rm_dlt (std::vector<PiecePtr>& v, const Pos p2) {
             v.erase (std::remove_if (v.begin(), v.end(), [p2] (PiecePtr piece) -> bool {
-                Pos p = piece->check_position();
+                Pos p = piece->get_pos ();
                 if (p == p2) return true;
                 return false;
             }), v.end());
