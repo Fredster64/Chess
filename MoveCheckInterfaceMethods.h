@@ -137,9 +137,6 @@ namespace chess {
                 }
             }
             
-            
-            
-            
             int8_t posx = position.x + 1;
             int8_t posy = position.y + 1;
             

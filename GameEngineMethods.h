@@ -46,9 +46,9 @@ namespace chess {
         board = nullptr;
         delete board;
         for (auto& p : white_pieces) { p = nullptr; }
-        white_pieces.clear();
+        white_pieces.clear ();
         for (auto& p : black_pieces) { p = nullptr; }
-        black_pieces.clear();
+        black_pieces.clear ();
     }
     
     void GameEngine :: play_game (void) {
@@ -60,13 +60,13 @@ namespace chess {
             Pos pin, pout;
             std::cout << "Please enter the coordinates of the piece you are moving." << std::endl;
             std::cin >> p;
-            pin = char2int(p);
+            pin = char2int (p);
             if ((board[pin.x][pin.y] & ((game_status & 0x01) == 0 ? 0x80 : 0x40)) == 0) {
                 std::cout << "No " << ((game_status & 0x01) == 0 ? "Black" : "White") << " piece on this square. Please try again." << std::endl;
             } else do {
                 std::cout << "Please enter where the piece is moving to." << std::endl;
                 std::cin >> p;
-                pout = this->char2int(p);
+                pout = this->char2int (p);
                 if (move_piece (pin, pout)) {
                     print_board ();
                     allowed = true;
@@ -83,7 +83,7 @@ namespace chess {
                 }
             } while (!allowed);
             
-            lm.print_lm();
+            lm.print_lm ();
             
             // check if valid moves exist:
             if (counter == 0) { game_status |= 0x80; }
@@ -124,7 +124,7 @@ namespace chess {
     }
     
     void GameEngine :: place_rooks (const bool c, const int8_t r) {
-        for (int8_t i = 0; i < 8; i+=7) {
+        for (int8_t i = 0; i < 8; i += 7) {
             RookPtr rook (new Rook (c, {i, r}, lm, board));
             this->pb_ptr (white_pieces, black_pieces, rook, c);
             board[i][r] |= c ? 0x48 : 0x88;
@@ -145,9 +145,9 @@ namespace chess {
         uint8_t pr;
         bool c = (game_status & 0x1) > 0;
         for (const auto& piece : (c ? white_pieces : black_pieces)) {
-            Pos temp = piece->check_position();
-            if ((pfrom.x == temp.x) and (pfrom.y == temp.y)) { pr = piece->move(pto); }
-            piece->valid_moves.clear();
+            Pos temp = piece->get_pos ();
+            if ((pfrom.x == temp.x) and (pfrom.y == temp.y)) { pr = piece->move (pto); }
+            piece->valid_moves.clear ();
         }
         if ((pr & 0x01) > 0) { r = true; }
         pr >>= 1;
@@ -179,34 +179,38 @@ namespace chess {
                     break;
                 }
                 case 0x10: { // QS-Castle
-                    // need to move the QS rook
                     Pos p[2] = {{0, 0}, {0, 7}};
                     for (auto& piece : (c ? white_pieces : black_pieces)) {
                         if (piece->get_pos() == p[0]) { // White
-                            piece->update_pos({3, 0});
+                            auto rook = std::dynamic_pointer_cast<Rook>(piece); // cast PiecePtr to RookPtr
+                            rook->castled ({3, 0});
                             board[0][0] = 0;
                             board[3][0] = 0x48;
                         } else if (piece->get_pos() == p[1]) { // Black
-                            piece->update_pos({3, 7});
+                            auto rook = std::dynamic_pointer_cast<Rook>(piece); // cast PiecePtr to RookPtr
+                            rook->castled ({3, 7});
                             board[0][7] = 0;
                             board[3][7] = 0x88;
                         }
                     }
+                    break;
                 }
                 case 0x20: { // KS-Castle
-                    // need to move the KS rook
                     Pos p[2] = {{7, 0}, {7, 7}};
                     for (auto& piece : (c ? white_pieces : black_pieces)) {
                         if (piece->get_pos() == p[0]) { // White
-                            piece->update_pos({5, 0});
+                            auto rook = std::dynamic_pointer_cast<Rook>(piece); // cast PiecePtr to RookPtr
+                            rook->castled ({5, 0});
                             board[7][0] = 0;
                             board[5][0] = 0x48;
                         } else if (piece->get_pos() == p[1]) { // Black
-                            piece->update_pos({5, 7});
+                            auto rook = std::dynamic_pointer_cast<Rook>(piece); // cast PiecePtr to RookPtr
+                            rook->castled ({5, 7});
                             board[7][7] = 0;
                             board[5][7] = 0x88;
                         }
                     }
+                    break;
                 }
                 case 0x40: { // en-passant
                     Pos p_dlt;
@@ -217,6 +221,7 @@ namespace chess {
                         p_dlt = {pto.x, 3};
                     }
                     this->rm_dlt ((c ? white_pieces : black_pieces), p_dlt);
+                    break;
                 }
             }
         }

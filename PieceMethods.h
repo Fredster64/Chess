@@ -18,13 +18,13 @@ namespace chess {
     }
     
     Piece :: ~Piece (void) {
-        valid_moves.clear();
+        valid_moves.clear ();
         mci.pgb = nullptr;
         mci.lm_ptr = nullptr;
     };
     
     void Piece :: print_info (void) {
-        std::cout << (is_white ? "White " : "Black ") << this->get_type() << " at " << static_cast<char>(mci.position.x + 'A') << static_cast<int>(mci.position.y + 1) << std::endl;
+        std::cout << (is_white ? "White " : "Black ") << this->get_type () << " at " << static_cast<char>(mci.position.x + 'A') << static_cast<int>(mci.position.y + 1) << std::endl;
     }
     
     void Piece :: check_moves (std::vector<Pos>& v, bool t) { // Calls the check_moves function in the interface for this piece
@@ -43,7 +43,7 @@ namespace chess {
             }
         }
         if (valid == 1) {
-            this->update_last_move(p_from, p_to, get_type());
+            this->update_last_move(p_from, p_to, get_type ());
             uint8_t temp = b[p_from.x][p_from.y];
             b[p_from.x][p_from.y] = 0;
             this->update_pos (p_to);
