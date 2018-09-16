@@ -151,32 +151,62 @@ namespace chess {
         }
         if ((pr & 0x01) > 0) { r = true; }
         pr >>= 1;
-        if (pr > 0) { // promotion/en-passant condition for pawns
+        if (pr > 0) { // promotion/castling/en-passant condition for pawns
             if (pr < 0x10) this->rm_dlt ((c ? white_pieces : black_pieces), pto); // delete the pawn
             switch (pr) {
-                case 0x01: {
+                case 0x01: { // promotion to Knight
                     KnightPtr knight (new Knight (is_white, pto, lm, board));
                     board[pto.x][pto.y] = (c ? 0x42 : 0x82);
                     this->pb_ptr (white_pieces, black_pieces, knight, c);
                     break;
                 }
-                case 0x02: {
+                case 0x02: { // promotion to Bishop
                     BishopPtr bishop (new Bishop (is_white, pto, lm, board));
                     board[pto.x][pto.y] = (c ? 0x44 : 0x84);
                     this->pb_ptr (white_pieces, black_pieces, bishop, c);
                     break;
                 }
-                case 0x04: {
+                case 0x04: { // promotion to Rook
                     RookPtr rook (new Rook (is_white, pto, lm, board));
                     board[pto.x][pto.y] = (c ? 0x48 : 0x88);
                     this->pb_ptr (white_pieces, black_pieces, rook, c);
                     break;
                 }
-                case 0x08: {
+                case 0x08: { // promotion to Queen
                     QueenPtr queen (new Queen (is_white, pto, lm, board));
                     board[pto.x][pto.y] = (c ? 0x50 : 0x90);
                     this->pb_ptr (white_pieces, black_pieces, queen, c);
                     break;
+                }
+                case 0x10: { // QS-Castle
+                    // need to move the QS rook
+                    Pos p[2] = {{0, 0}, {0, 7}};
+                    for (auto& piece : (c ? white_pieces : black_pieces)) {
+                        if (piece->get_pos() == p[0]) { // White
+                            piece->update_pos({3, 0});
+                            board[0][0] = 0;
+                            board[3][0] = 0x48;
+                        } else if (piece->get_pos() == p[1]) { // Black
+                            piece->update_pos({3, 7});
+                            board[0][7] = 0;
+                            board[3][7] = 0x88;
+                        }
+                    }
+                }
+                case 0x20: { // KS-Castle
+                    // need to move the KS rook
+                    Pos p[2] = {{7, 0}, {7, 7}};
+                    for (auto& piece : (c ? white_pieces : black_pieces)) {
+                        if (piece->get_pos() == p[0]) { // White
+                            piece->update_pos({5, 0});
+                            board[7][0] = 0;
+                            board[5][0] = 0x48;
+                        } else if (piece->get_pos() == p[1]) { // Black
+                            piece->update_pos({5, 7});
+                            board[7][7] = 0;
+                            board[5][7] = 0x88;
+                        }
+                    }
                 }
                 case 0x40: { // en-passant
                     Pos p_dlt;

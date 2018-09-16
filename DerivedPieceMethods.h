@@ -28,14 +28,10 @@ namespace chess {
             // en-passant modification
             if ((p_from.x != p_to.x) and (b[p_to.x][p_to.y] == 0)) { // if it moves diagonally
                 // remove the piece directly to the side and move diagonally.
-                valid = 0x81;
+                valid |= 0x80;
                 Pos p_dlt;
-                if (is_white) {
-                    p_dlt = {p_to.x, 4};
-                }
-                else {
-                    p_dlt = {p_to.x, 3};
-                }
+                if (is_white) p_dlt = {p_to.x, 4};
+                else p_dlt = {p_to.x, 3};
                 b[p_dlt.x][p_dlt.y] = 0;
             }
             
@@ -53,7 +49,6 @@ namespace chess {
     }
 
     uint8_t King :: move (Pos p_to) {
-        // an exception case is made for the castling move (not yet implemented).
         uint8_t** b = this->get_board ();
         Pos p_from = this->get_pos ();
         uint8_t valid = 0;
@@ -64,11 +59,18 @@ namespace chess {
             }
         }
         if (valid == 1) {
+            this->is_first_move (false);
             this->update_last_move(p_from, p_to, "King");
             uint8_t temp = b[p_from.x][p_from.y];
             b[p_from.x][p_from.y] = 0;
             this->update_pos (p_to);
             b[p_to.x][p_to.y] = temp;
+            // castling modification
+            if ((p_from.x - p_to.x) == 2) { // QS-Castle
+                valid |= 0x20;
+            } else if ((p_from.x - p_to.x) == -2) { // KS-Castle
+                valid |= 0x40;
+            }
         }
         return valid;
     }

@@ -123,6 +123,23 @@ namespace chess {
 
         if (piece_type == "King") {
             
+            // castling
+            Pos d3 = {2, 0};
+            
+            if (first_move) {
+                // KS-Castle
+                if ((b[p.x + 1][p.y] == 0) and (b[p.x + 2][p.y] == 0) and (b[p.x + 3][p.y] == w ? 0x48 : 0x88)) {
+                    v.push_back(p + d3);
+                }
+                // QS-Castle
+                if ((b[p.x - 1][p.y] == 0) and (b[p.x - 2][p.y] == 0) and (b[p.x - 3][p.y] == 0) and (b[p.x - 4][p.y] == w ? 0x48 : 0x88)) {
+                    v.push_back(p - d3);
+                }
+            }
+            
+            
+            
+            
             int8_t posx = position.x + 1;
             int8_t posy = position.y + 1;
             

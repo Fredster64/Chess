@@ -62,15 +62,15 @@ namespace chess {
         ~Piece (void); // destructor
         std::vector<Pos> valid_moves;
         Pos check_position (void) { return mci.position; }
+        Pos get_pos () { return mci.position; }
+        void update_pos (Pos p) { mci.position = p; }
         void print_info (void);
         void check_moves (std::vector<Pos>& v, bool t=true);
         virtual uint8_t move (const Pos p); // polymorphic, default for N, B, R, Q.
     protected:
         bool is_white; // stores if the piece is White (1) or Black (0).
         /* One-Line Functions */
-        Pos get_pos () { return mci.position; }
         uint8_t** get_board () { return *mci.pgb; }
-        void update_pos (Pos p) { mci.position = p; }
         void is_first_move (bool x) { mci.first_move = x; }
         void update_last_move (const Pos p_f, const Pos p_t, const std::string& s_pt) { *mci.lm_ptr = {p_f, p_t, s_pt}; }
     private:
