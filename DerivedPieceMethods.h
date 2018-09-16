@@ -44,7 +44,7 @@ namespace chess {
                 this->update_pos (p_to);
                 b[p_to.x][p_to.y] = temp;
             }
-            valid |= if_in_check (p_from, p_to);
+            valid |= if_in_check ();
         }
         return valid;
     }
@@ -73,7 +73,7 @@ namespace chess {
             } else if ((p_from.x - p_to.x) == -2) { // KS-Castle
                 valid |= 0x40;
             }
-            valid |= if_in_check (p_from, p_to);
+            valid |= if_in_check ();
         }
         return valid;
     }

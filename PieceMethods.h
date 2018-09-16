@@ -33,14 +33,26 @@ namespace chess {
     }
     
     // Resets the board to pre-move position if the move leaves the player in check
-    uint8_t Piece :: if_in_check (Pos p_before, Pos p_after) {
+    uint8_t Piece :: if_in_check (void) {
+        
         uint8_t** b = this->get_board ();
+        if (!ge->in_check (is_white)) return 1;
+        else {
+            
+            Pos p_from = mci.lm_ptr->lmt;
+            Pos p_to = mci.lm_ptr->lmf;
+            
+            uint8_t temp = b[p_from.x][p_from.y];
+            b[p_from.x][p_from.y] = 0;
+            this->update_pos (p_to);
+            b[p_to.x][p_to.y] = temp;
+            
+            this->update_last_move(p_from, p_to, get_type ());
+            
+            std::cout << "This move is invalid - it would put you in check." << std::endl;
         
-        /** Added as dummy **/
-        return 1;
-        
-//        if (in_check (is_white)) return 1;
-//        else {
+            return 0;
+            
 //            temp = b[p_after.x][p_after.y];
 //            b[p_after.x][p_after.y] = 0;
 //            mci.position = p_before;
@@ -49,7 +61,7 @@ namespace chess {
 //            std::cout << "This move is invalid - it would put you in check." << std::endl;
 //            // Move was invalid
 //            return 0;
-//        }
+        }
     }
     
     uint8_t Piece :: move (Pos p_to, GameEngine& game) {
@@ -71,7 +83,7 @@ namespace chess {
             this->update_pos (p_to);
             b[p_to.x][p_to.y] = temp;
             // Reset and invalidate move if it leaves the player in check
-            valid |= if_in_check (p_from, p_to);
+            valid |= if_in_check ();
         }
         return valid;
     }

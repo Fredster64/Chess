@@ -70,16 +70,16 @@ namespace chess {
         void check_moves (std::vector<Pos>& v, bool t=true);
         // Does the check test and invalidates move if necessary
         // Returns valid
-        uint8_t if_in_check (Pos p_before, Pos p_after);
+        uint8_t if_in_check (void);
         virtual uint8_t move (const Pos p, GameEngine& game); // polymorphic, default for N, B, R, Q.
     protected:
         bool is_white; // stores if the piece is White (1) or Black (0).
         /* One-Line Functions */
         uint8_t** get_board (void) { return *mci.pgb; }
+        GameEngine* ge;
         void is_first_move (bool x) { mci.first_move = x; }
         void update_pos (Pos p) { mci.position = p; }
         void update_last_move (const Pos p_f, const Pos p_t, const std::string& s_pt) { *mci.lm_ptr = {p_f, p_t, s_pt}; }
-        GameEngine* ge;
     private:
         MCI mci; // Piece movement controller
         virtual std::string get_type (void) = 0; // pure polymorphic function
@@ -152,6 +152,7 @@ namespace chess {
     public:
         GameEngine (const bool player_colour); // constructor
         ~GameEngine (void); // destructor
+        bool in_check (bool c);
     protected:
     private:
         // stores if the player White (1) or Black (0).
@@ -194,7 +195,6 @@ namespace chess {
         void place_royals (const bool c, const int8_t r);
         // Functions that interact with the Pieces
         bool move_piece (Pos pfrom, Pos pto);
-        bool in_check (bool c);
         // Prints the current board
         void print_board (void);
         // One-Line Functions
