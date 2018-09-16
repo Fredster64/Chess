@@ -63,7 +63,6 @@ namespace chess {
         std::vector<Pos> valid_moves;
         Pos check_position (void) { return mci.position; }
         Pos get_pos () { return mci.position; }
-        void update_pos (Pos p) { mci.position = p; }
         void print_info (void);
         void check_moves (std::vector<Pos>& v, bool t=true);
         virtual uint8_t move (const Pos p); // polymorphic, default for N, B, R, Q.
@@ -72,6 +71,7 @@ namespace chess {
         /* One-Line Functions */
         uint8_t** get_board () { return *mci.pgb; }
         void is_first_move (bool x) { mci.first_move = x; }
+        void update_pos (Pos p) { mci.position = p; }
         void update_last_move (const Pos p_f, const Pos p_t, const std::string& s_pt) { *mci.lm_ptr = {p_f, p_t, s_pt}; }
     private:
         MCI mci; // Piece movement controller
@@ -107,6 +107,7 @@ namespace chess {
     class Rook : public Piece {
     public:
         using Piece :: Piece;
+        void castled (Pos p) { update_pos(p); }
     protected:
     private:
         std::string get_type (void) { return "Rook"; }

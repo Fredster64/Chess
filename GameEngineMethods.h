@@ -179,30 +179,32 @@ namespace chess {
                     break;
                 }
                 case 0x10: { // QS-Castle
-                    // need to move the QS rook
                     Pos p[2] = {{0, 0}, {0, 7}};
                     for (auto& piece : (c ? white_pieces : black_pieces)) {
                         if (piece->get_pos() == p[0]) { // White
-                            piece->update_pos({3, 0});
+                            auto rook = std::dynamic_pointer_cast<Rook>(piece); // cast PiecePtr to RookPtr
+                            rook->castled({3, 0});
                             board[0][0] = 0;
                             board[3][0] = 0x48;
                         } else if (piece->get_pos() == p[1]) { // Black
-                            piece->update_pos({3, 7});
+                            auto rook = std::dynamic_pointer_cast<Rook>(piece); // cast PiecePtr to RookPtr
+                            rook->castled({3, 7});
                             board[0][7] = 0;
                             board[3][7] = 0x88;
                         }
                     }
                 }
                 case 0x20: { // KS-Castle
-                    // need to move the KS rook
                     Pos p[2] = {{7, 0}, {7, 7}};
                     for (auto& piece : (c ? white_pieces : black_pieces)) {
                         if (piece->get_pos() == p[0]) { // White
-                            piece->update_pos({5, 0});
+                            auto rook = std::dynamic_pointer_cast<Rook>(piece); // cast PiecePtr to RookPtr
+                            rook->castled({5, 0});
                             board[7][0] = 0;
                             board[5][0] = 0x48;
                         } else if (piece->get_pos() == p[1]) { // Black
-                            piece->update_pos({5, 7});
+                            auto rook = std::dynamic_pointer_cast<Rook>(piece); // cast PiecePtr to RookPtr
+                            rook->castled({5, 7});
                             board[7][7] = 0;
                             board[5][7] = 0x88;
                         }
