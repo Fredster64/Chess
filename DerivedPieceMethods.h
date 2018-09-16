@@ -9,8 +9,8 @@
 
 namespace chess {
     
-    uint8_t Pawn :: move (Pos p_to) {
-        // if first move occurs, it must be set to false.
+    uint8_t Pawn :: move (Pos p_to, GameEngine& game) {
+        ge = &game;
         uint8_t** b = this->get_board ();
         Pos p_from = this->get_pos ();
         p_from.print_pos ();
@@ -44,11 +44,13 @@ namespace chess {
                 this->update_pos (p_to);
                 b[p_to.x][p_to.y] = temp;
             }
+            valid |= if_in_check ();
         }
         return valid;
     }
 
-    uint8_t King :: move (Pos p_to) {
+    uint8_t King :: move (Pos p_to, GameEngine& game) {
+        ge = &game;
         uint8_t** b = this->get_board ();
         Pos p_from = this->get_pos ();
         uint8_t valid = 0;
@@ -71,6 +73,7 @@ namespace chess {
             } else if ((p_from.x - p_to.x) == -2) { // KS-Castle
                 valid |= 0x40;
             }
+            valid |= if_in_check ();
         }
         return valid;
     }

@@ -28,6 +28,7 @@ bool vec_search (const std::vector<T>& v, const T item) {
     }
     return false;
 }
+
 template <typename T>
 void rm_dupes (std::vector<T>& v) {
     int8_t k = 0;

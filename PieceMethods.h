@@ -6,6 +6,7 @@
 #include <string>
 
 #include "ChessClasses.h" // for Class Definitions
+#include "ChessIncludes.h" // for in_check
 
 namespace chess {
     
@@ -28,11 +29,35 @@ namespace chess {
     }
     
     void Piece :: check_moves (std::vector<Pos>& v, bool t) { // Calls the check_moves function in the interface for this piece
-        mci.move_checker (v, this->get_type(), is_white, t);
+        mci.move_checker (v, this->get_type (), is_white, t);
     }
     
-    uint8_t Piece :: move (const Pos p_to) {
+    // Resets the board to pre-move position if the move leaves the player in check
+    uint8_t Piece :: if_in_check (void) {
+        
+        uint8_t** b = this->get_board ();
+        if (!ge->in_check (is_white)) return 1;
+        else {
+            
+            Pos p_from = mci.lm_ptr->lmt;
+            Pos p_to = mci.lm_ptr->lmf;
+            
+            uint8_t temp = b[p_from.x][p_from.y];
+            b[p_from.x][p_from.y] = 0;
+            this->update_pos (p_to);
+            b[p_to.x][p_to.y] = temp;
+            
+            this->update_last_move(p_from, p_to, get_type ());
+            
+            std::cout << "This move is invalid - it would put you in check." << std::endl;
+        
+            return 0;
+        }
+    }
+    
+    uint8_t Piece :: move (Pos p_to, GameEngine& game) {
         // the default function for moving. Exceptions only for p and K.
+        ge = &game;
         uint8_t** b = this->get_board ();
         Pos p_from = this->get_pos ();
         uint8_t valid = 0;
@@ -48,6 +73,8 @@ namespace chess {
             b[p_from.x][p_from.y] = 0;
             this->update_pos (p_to);
             b[p_to.x][p_to.y] = temp;
+            // Reset and invalidate move if it leaves the player in check
+            valid |= if_in_check ();
         }
         return valid;
     }
