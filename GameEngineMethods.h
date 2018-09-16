@@ -88,7 +88,7 @@ namespace chess {
             // check if valid moves exist:
             if (counter == 0) { game_status |= 0x80; }
             // check if in 'Check':
-            if (in_check( (game_status & 0x01) > 0, this->board)) { // Changed to pass board to function
+            if (in_check ((game_status & 0x01) > 0)) { // Changed to pass board to function
                 game_status |= 0x20;
                 std::cout << "Check." << std::endl;
             } else {
@@ -102,7 +102,7 @@ namespace chess {
         std::string game_end = "stalemate";
         
         // Change result if checkmate
-        if( game_status & 0x40 > 0 ) {
+        if ((game_status & 0x40) > 0 ) {
         // game_status changes before this check is made. 
         // e.g. if the white player is checkmated, game_status will say that it is their turn 
         // because black has just moved and game_status has been updated (line 72)
@@ -110,11 +110,18 @@ namespace chess {
         // -- game_status says it's black's turn and the player is white; or
         // -- game_status says it's white's turn and the player is black.
         // That's what this piece of logic tests.
-            ( ( is_white & ( game_status & 0x01 == 0 ) ) || ( !is_white & ( game_status & 0x01 > 0 ) ) ) ? (result = "won") : (result = "lost");
+//            ( ( is_white & ( game_status & 0x01 == 0 ) ) || ( !is_white & ( game_status & 0x01 > 0 ) ) ) ? (result = "won") : (result = "lost");
+            if ((is_white and (game_status & 0x01) == 0) or (!is_white and (game_status & 0x01) > 0)) {
+                result = "won";
+            } else {
+                result = "lost";
+            }
+            
+            
             game_end = "checkmate";
         }
         // Either way, print the game result.
-        std::cout << "The game has ended in " << game_end << ". You have " << result << "." << endl;
+        std::cout << "The game has ended in " << game_end << ". You have " << result << "." << std::endl;
         return;
     }
     
@@ -165,7 +172,7 @@ namespace chess {
         bool c = (game_status & 0x1) > 0;
         for (const auto& piece : (c ? white_pieces : black_pieces)) {
             Pos temp = piece->get_pos ();
-            if ((pfrom.x == temp.x) and (pfrom.y == temp.y)) { pr = piece->move (pto); }
+            if (pfrom == temp) { pr = piece->move (pto, *this); }
             piece->valid_moves.clear ();
         }
         if ((pr & 0x01) > 0) { r = true; }
@@ -174,7 +181,7 @@ namespace chess {
             if (pr < 0x10) this->rm_dlt ((c ? white_pieces : black_pieces), pto); // delete the pawn
             switch (pr) {
                 case 0x01: { // promotion to Knight
-                    KnightPtr knight (new Knight (is_white, pto, lm, board));
+                    KnightPtr knight (new Knight (is_white, pto, lm,board));
                     board[pto.x][pto.y] = (c ? 0x42 : 0x82);
                     this->pb_ptr (white_pieces, black_pieces, knight, c);
                     break;
@@ -274,6 +281,32 @@ namespace chess {
 //         // check if the k_pos is in v.
 //         return vec_search<Pos>(vec, k_pos);
 //     }
+    
+    bool GameEngine :: in_check (bool c) {
+        // find all cells that the king cannot exist in. If the current cell is in the list, then the king is in check.
+        uint8_t k_score = c ? 0x60 : 0xA0;
+        uint8_t comp = c ? 0x40 : 0x80;
+        Pos k_pos;
+        std::vector<Pos> vec;
+        // search for the King's cell
+        for (int8_t j = 0; j < 8; ++j) {
+            for (int8_t i = 0; i < 8; ++i) {
+                if ((board[i][j] & k_score) == k_score) {
+                    k_pos = {i, j};
+                    break;
+                }
+            }
+        }
+        // look for all cells that can be attacked by the opponent
+        for (const auto& piece : (c ? black_pieces : white_pieces)) { piece->check_moves (vec, false); }
+        rm_dupes<Pos>(vec);
+        for (auto& cell : vec) {
+            cell.print_pos();
+        }
+        
+        // check if the k_pos is in v.
+        return vec_search<Pos>(vec, k_pos);
+    }
     
     void GameEngine :: print_board (void) {
         std::cout << std::endl;

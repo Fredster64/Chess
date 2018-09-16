@@ -55,6 +55,10 @@ namespace chess {
         LM* lm_ptr;
     } MCI;
     
+    // Prototype Piece and GameEngine so each can reference a pointer of the other
+    class Piece;
+    class GameEngine;
+    
     /* Classes for the Game Pieces. Created by the Engine directly. */
     class Piece {
     public:
@@ -64,12 +68,10 @@ namespace chess {
         Pos get_pos (void) { return mci.position; }
         void print_info (void);
         void check_moves (std::vector<Pos>& v, bool t=true);
-
         // Does the check test and invalidates move if necessary
         // Returns valid
         uint8_t if_in_check (Pos p_before, Pos p_after);
-        
-        virtual uint8_t move (const Pos p); // polymorphic, default for N, B, R, Q.
+        virtual uint8_t move (const Pos p, GameEngine& game); // polymorphic, default for N, B, R, Q.
     protected:
         bool is_white; // stores if the piece is White (1) or Black (0).
         /* One-Line Functions */
@@ -77,6 +79,7 @@ namespace chess {
         void is_first_move (bool x) { mci.first_move = x; }
         void update_pos (Pos p) { mci.position = p; }
         void update_last_move (const Pos p_f, const Pos p_t, const std::string& s_pt) { *mci.lm_ptr = {p_f, p_t, s_pt}; }
+        GameEngine* ge;
     private:
         MCI mci; // Piece movement controller
         virtual std::string get_type (void) = 0; // pure polymorphic function
@@ -85,7 +88,7 @@ namespace chess {
     class Pawn : public Piece {
     public:
         using Piece :: Piece;
-        uint8_t move (const Pos p);
+        uint8_t move (Pos p, GameEngine& game);
     protected:
     private:
         std::string get_type (void) { return "Pawn"; }
@@ -128,7 +131,7 @@ namespace chess {
     class King : public Piece {
     public:
         using Piece :: Piece;
-        uint8_t move (const Pos p);
+        uint8_t move (Pos p, GameEngine& game);
     protected:
     private:
         std::string get_type (void) { return "King"; }
@@ -191,7 +194,7 @@ namespace chess {
         void place_royals (const bool c, const int8_t r);
         // Functions that interact with the Pieces
         bool move_piece (Pos pfrom, Pos pto);
-        //bool in_check (bool c); <---- Moved to ChessIncludes.h
+        bool in_check (bool c);
         // Prints the current board
         void print_board (void);
         // One-Line Functions
