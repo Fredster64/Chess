@@ -28,7 +28,7 @@ namespace chess {
             // en-passant modification
             if ((p_from.x != p_to.x) and (b[p_to.x][p_to.y] == 0)) { // if it moves diagonally
                 // remove the piece directly to the side and move diagonally.
-                valid = 0x80;
+                valid = 0x81;
                 Pos p_dlt;
                 if (is_white) {
                     p_dlt = {p_to.x, 4};

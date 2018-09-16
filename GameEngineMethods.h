@@ -76,6 +76,7 @@ namespace chess {
                 for (const auto& piece : ((game_status & 0x01) > 0) ? white_pieces : black_pieces) {
 //                    piece->print_info ();
                     piece->check_moves (piece->valid_moves, true);
+//                    for (auto& move : piece->valid_moves) { move.print_pos(); } // prints valid moves
                     for (const auto& move : piece->valid_moves) {
                         ++counter;
                     }
@@ -212,7 +213,7 @@ namespace chess {
         // look for all cells that can be attacked by the opponent
         for (const auto& piece : (c ? black_pieces : white_pieces)) { piece->check_moves (vec, false); }
         rm_dupes<Pos>(vec);
-        for (auto& cell : vec) { cell.print_pos(); }
+//        for (auto& cell : vec) { cell.print_pos(); }
         
         // check if the k_pos is in v.
         return vec_search<Pos>(vec, k_pos);

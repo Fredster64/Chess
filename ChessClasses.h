@@ -72,7 +72,7 @@ namespace chess {
         uint8_t** get_board () { return *mci.pgb; }
         void update_pos (Pos p) { mci.position = p; }
         void is_first_move (bool x) { mci.first_move = x; }
-        void update_last_move (Pos p_f, Pos p_t, std::string s_pt) { *mci.lm_ptr = {p_f, p_t, s_pt}; }
+        void update_last_move (const Pos p_f, const Pos p_t, const std::string& s_pt) { *mci.lm_ptr = {p_f, p_t, s_pt}; }
     private:
         MCI mci; // Piece movement controller
         virtual std::string get_type (void) = 0; // pure polymorphic function
