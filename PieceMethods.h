@@ -42,6 +42,7 @@ namespace chess {
             }
         }
         if (valid == 1) {
+            this->update_last_move(p_from, p_to);
             uint8_t temp = b[p_from.x][p_from.y];
             b[p_from.x][p_from.y] = 0;
             this->update_pos (p_to);

@@ -45,6 +45,8 @@ namespace chess {
         Pos position;
         bool first_move;
         uint8_t*** gb; // *gb = board, gb = &board.
+        Pos last_move_from;
+        Pos last_move_to;
     } MCI;
     
     /* Classes for the Game Pieces. Created by the Engine directly. */
@@ -63,6 +65,10 @@ namespace chess {
         /* One-Line Functions */
         Pos get_pos () { return mci.position; }
         void update_pos (Pos p) { mci.position = p; }
+        void update_last_move (Pos p_f, Pos p_t) {
+            mci.last_move_from = p_f;
+            mci.last_move_to = p_t;
+        }
         void is_first_move (bool x) { mci.first_move = x; }
     private:
         MCI mci; // Piece movement controller
@@ -71,52 +77,52 @@ namespace chess {
     
     class Pawn : public Piece {
     public:
-    protected:
-    private:
         using Piece :: Piece;
         uint8_t move (const Pos p);
+    protected:
+    private:
         std::string get_type (void) { return "Pawn"; }
         uint8_t promotion (void);
     };
     
     class Knight : public Piece {
     public:
+        using Piece :: Piece;
     protected:
     private:
-        using Piece :: Piece;
         std::string get_type (void) { return "Knight"; }
     };
     
     class Bishop : public Piece {
     public:
+        using Piece :: Piece;
     protected:
     private:
-        using Piece :: Piece;
         std::string get_type (void) { return "Bishop"; }
     };
     
     class Rook : public Piece {
     public:
+        using Piece :: Piece;
     protected:
     private:
-        using Piece :: Piece;
         std::string get_type (void) { return "Rook"; }
     };
     
     class Queen : public Piece {
     public:
+        using Piece :: Piece;
     protected:
     private:
-        using Piece :: Piece;
         std::string get_type (void) { return "Queen"; }
     };
     
     class King : public Piece {
     public:
-    protected:
-    private:
         using Piece :: Piece;
         uint8_t move (const Pos p);
+    protected:
+    private:
         std::string get_type (void) { return "King"; }
     };
     /****************************************************************/
