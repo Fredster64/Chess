@@ -20,6 +20,7 @@ namespace chess {
             board[i] = new uint8_t[8];
             for (int8_t j = 0; j < 8; ++j) { board[i][j] = 0; }
         }
+        lm = {{0, 0}, {0, 0}, ""}; // no last move exists yet.
         bool colour = true;
         int8_t row = 1;
         do {
@@ -45,9 +46,9 @@ namespace chess {
         board = nullptr;
         delete board;
         for (auto& p : white_pieces) { p = nullptr; }
-        white_pieces.clear();
+        white_pieces.clear ();
         for (auto& p : black_pieces) { p = nullptr; }
-        black_pieces.clear();
+        black_pieces.clear ();
     }
     
     void GameEngine :: play_game (void) {
@@ -59,13 +60,13 @@ namespace chess {
             Pos pin, pout;
             std::cout << "Please enter the coordinates of the piece you are moving." << std::endl;
             std::cin >> p;
-            pin = char2int(p);
+            pin = char2int (p);
             if ((board[pin.x][pin.y] & ((game_status & 0x01) == 0 ? 0x80 : 0x40)) == 0) {
                 std::cout << "No " << ((game_status & 0x01) == 0 ? "Black" : "White") << " piece on this square. Please try again." << std::endl;
             } else do {
                 std::cout << "Please enter where the piece is moving to." << std::endl;
                 std::cin >> p;
-                pout = this->char2int(p);
+                pout = this->char2int (p);
                 if (move_piece (pin, pout)) {
                     print_board ();
                     allowed = true;
@@ -75,11 +76,15 @@ namespace chess {
                 for (const auto& piece : ((game_status & 0x01) > 0) ? white_pieces : black_pieces) {
 //                    piece->print_info ();
                     piece->check_moves (piece->valid_moves, true);
+//                    for (auto& move : piece->valid_moves) { move.print_pos(); } // prints valid moves
                     for (const auto& move : piece->valid_moves) {
                         ++counter;
                     }
                 }
             } while (!allowed);
+            
+            lm.print_lm ();
+            
             // check if valid moves exist:
             if (counter == 0) { game_status |= 0x80; }
             // check if in 'Check':
@@ -96,7 +101,7 @@ namespace chess {
     
     void GameEngine :: place_pawns (const bool c, const int8_t r) {
         for (int8_t i = 0; i < 8; ++i) {
-            PawnPtr pawn (new Pawn (c, {i, r}, board));
+            PawnPtr pawn (new Pawn (c, {i, r}, lm, board));
             this->pb_ptr (white_pieces, black_pieces, pawn, c);
             board[i][r] |= c ? 0x41 : 0x81;
         }
@@ -104,7 +109,7 @@ namespace chess {
     
     void GameEngine :: place_knights (const bool c, const int8_t r) {
         for (int8_t i = 1; i < 8; i += 5) {
-            KnightPtr knight (new Knight (c, {i, r}, board));
+            KnightPtr knight (new Knight (c, {i, r}, lm, board));
             this->pb_ptr (white_pieces, black_pieces, knight, c);
             board[i][r] |= c ? 0x42 : 0x82;
         }
@@ -112,25 +117,25 @@ namespace chess {
     
     void GameEngine :: place_bishops (const bool c, const int8_t r) {
         for (int8_t i = 2; i < 8; i += 3) {
-            BishopPtr bishop (new Bishop (c, {i, r}, board));
+            BishopPtr bishop (new Bishop (c, {i, r}, lm, board));
             this->pb_ptr (white_pieces, black_pieces, bishop, c);
             board[i][r] |= c ? 0x44 : 0x84;
         }
     }
     
     void GameEngine :: place_rooks (const bool c, const int8_t r) {
-        for (int8_t i = 0; i < 8; i+=7) {
-            RookPtr rook (new Rook (c, {i, r}, board));
+        for (int8_t i = 0; i < 8; i += 7) {
+            RookPtr rook (new Rook (c, {i, r}, lm, board));
             this->pb_ptr (white_pieces, black_pieces, rook, c);
             board[i][r] |= c ? 0x48 : 0x88;
         }
     }
     
     void GameEngine :: place_royals (const bool c, const int8_t r) {
-        QueenPtr queen (new Queen (c, {3, r}, board));
+        QueenPtr queen (new Queen (c, {3, r}, lm, board));
         this->pb_ptr (white_pieces, black_pieces, queen, c);
         board[3][r] |= c ? 0x50 : 0x90;
-        KingPtr king (new King (c, {4, r}, board));
+        KingPtr king (new King (c, {4, r}, lm, board));
         this->pb_ptr (white_pieces, black_pieces, king, c);
         board[4][r] |= c ? 0x60 : 0xA0;
     }
@@ -138,45 +143,90 @@ namespace chess {
     bool GameEngine :: move_piece (Pos pfrom, Pos pto) {
         bool r = false;
         uint8_t pr;
-        for (const auto& piece : ((game_status & 0x1) > 0 ? white_pieces : black_pieces)) {
-            Pos temp = piece->check_position();
-            if ((pfrom.x == temp.x) and (pfrom.y == temp.y)) { pr = piece->move(pto); }
-            piece->valid_moves.clear();
+        bool c = (game_status & 0x1) > 0;
+        for (const auto& piece : (c ? white_pieces : black_pieces)) {
+            Pos temp = piece->get_pos ();
+            if ((pfrom.x == temp.x) and (pfrom.y == temp.y)) { pr = piece->move (pto); }
+            piece->valid_moves.clear ();
         }
         if ((pr & 0x01) > 0) { r = true; }
         pr >>= 1;
-        if (pr > 0) { // promotion condition for pawns
-            bool c = (game_status & 0x1) > 0;
-            this->rm_dlt ((c ? white_pieces : black_pieces), pto); // delete the pawn
+        if (pr > 0) { // promotion/castling/en-passant condition for pawns
+            if (pr < 0x10) this->rm_dlt ((c ? white_pieces : black_pieces), pto); // delete the pawn
             switch (pr) {
-                case 0x01: {
-                    KnightPtr knight (new Knight (is_white, pto, board));
+                case 0x01: { // promotion to Knight
+                    KnightPtr knight (new Knight (is_white, pto, lm, board));
                     board[pto.x][pto.y] = (c ? 0x42 : 0x82);
                     this->pb_ptr (white_pieces, black_pieces, knight, c);
                     break;
                 }
-                case 0x02: {
-                    BishopPtr bishop (new Bishop (is_white, pto, board));
+                case 0x02: { // promotion to Bishop
+                    BishopPtr bishop (new Bishop (is_white, pto, lm, board));
                     board[pto.x][pto.y] = (c ? 0x44 : 0x84);
                     this->pb_ptr (white_pieces, black_pieces, bishop, c);
                     break;
                 }
-                case 0x04: {
-                    RookPtr rook (new Rook (is_white, pto, board));
+                case 0x04: { // promotion to Rook
+                    RookPtr rook (new Rook (is_white, pto, lm, board));
                     board[pto.x][pto.y] = (c ? 0x48 : 0x88);
                     this->pb_ptr (white_pieces, black_pieces, rook, c);
                     break;
                 }
-                case 0x08: {
-                    QueenPtr queen (new Queen (is_white, pto, board));
+                case 0x08: { // promotion to Queen
+                    QueenPtr queen (new Queen (is_white, pto, lm, board));
                     board[pto.x][pto.y] = (c ? 0x50 : 0x90);
                     this->pb_ptr (white_pieces, black_pieces, queen, c);
+                    break;
+                }
+                case 0x10: { // QS-Castle
+                    Pos p[2] = {{0, 0}, {0, 7}};
+                    for (auto& piece : (c ? white_pieces : black_pieces)) {
+                        if (piece->get_pos() == p[0]) { // White
+                            auto rook = std::dynamic_pointer_cast<Rook>(piece); // cast PiecePtr to RookPtr
+                            rook->castled ({3, 0});
+                            board[0][0] = 0;
+                            board[3][0] = 0x48;
+                        } else if (piece->get_pos() == p[1]) { // Black
+                            auto rook = std::dynamic_pointer_cast<Rook>(piece); // cast PiecePtr to RookPtr
+                            rook->castled ({3, 7});
+                            board[0][7] = 0;
+                            board[3][7] = 0x88;
+                        }
+                    }
+                    break;
+                }
+                case 0x20: { // KS-Castle
+                    Pos p[2] = {{7, 0}, {7, 7}};
+                    for (auto& piece : (c ? white_pieces : black_pieces)) {
+                        if (piece->get_pos() == p[0]) { // White
+                            auto rook = std::dynamic_pointer_cast<Rook>(piece); // cast PiecePtr to RookPtr
+                            rook->castled ({5, 0});
+                            board[7][0] = 0;
+                            board[5][0] = 0x48;
+                        } else if (piece->get_pos() == p[1]) { // Black
+                            auto rook = std::dynamic_pointer_cast<Rook>(piece); // cast PiecePtr to RookPtr
+                            rook->castled ({5, 7});
+                            board[7][7] = 0;
+                            board[5][7] = 0x88;
+                        }
+                    }
+                    break;
+                }
+                case 0x40: { // en-passant
+                    Pos p_dlt;
+                    if (c) {
+                        p_dlt = {pto.x, 4};
+                    }
+                    else {
+                        p_dlt = {pto.x, 3};
+                    }
+                    this->rm_dlt ((c ? white_pieces : black_pieces), p_dlt);
                     break;
                 }
             }
         }
         // delete pieces of the opposite colour if taken
-        this->rm_dlt (((game_status & 0x1) == 0 ? white_pieces : black_pieces), pto);
+        this->rm_dlt ((c ? black_pieces : white_pieces), pto);
         return r;
     }
     
@@ -198,9 +248,7 @@ namespace chess {
         // look for all cells that can be attacked by the opponent
         for (const auto& piece : (c ? black_pieces : white_pieces)) { piece->check_moves (vec, false); }
         rm_dupes<Pos>(vec);
-//        for (auto& cell : vec) {
-//            cell.print_pos();
-//        }
+//        for (auto& cell : vec) { cell.print_pos(); }
         
         // check if the k_pos is in v.
         return vec_search<Pos>(vec, k_pos);

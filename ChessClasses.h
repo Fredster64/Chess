@@ -39,31 +39,39 @@ namespace chess {
         p1 = p1 - p2;
     }
     
+    typedef struct LastMove {
+        Pos lmf;
+        Pos lmt;
+        std::string lpt;
+        void print_lm (void) { std::cout << lpt << " from " << static_cast<char>(lmf.x + 'A') << static_cast<int>(lmf.y + 1) << " to " << static_cast<char>(lmt.x + 'A') << static_cast<int>(lmt.y + 1) << std::endl;}
+    } LM;
+    
     typedef struct MovementCheckerInterface { // Movement-Checker Interface
-        void move_checker (std::vector<Pos>& v, std::string piece_type, bool w, bool t); // Handles movement of all pieces
-        void pb_inc (Pos p, std::vector<Pos>& v, Pos inc, bool is_white, bool t);
         Pos position;
         bool first_move;
-        uint8_t*** gb; // *gb = board, gb = &board.
+        uint8_t*** pgb; // *gb = board, gb = &board.
+        void move_checker (std::vector<Pos>& v, std::string piece_type, bool w, bool t); // Handles movement of all pieces
+        void pb_inc (Pos p, std::vector<Pos>& v, Pos inc, bool is_white, bool t);
+        LM* lm_ptr;
     } MCI;
     
     /* Classes for the Game Pieces. Created by the Engine directly. */
     class Piece {
     public:
-        Piece (const bool player_colour, const Pos coordinates, uint8_t**& gb); // constructor
+        Piece (const bool player_colour, const Pos coordinates, LM& last_move, uint8_t**& gb); // constructor
         ~Piece (void); // destructor
         std::vector<Pos> valid_moves;
-        Pos check_position (void) { return mci.position; }
+        Pos get_pos (void) { return mci.position; }
         void print_info (void);
         void check_moves (std::vector<Pos>& v, bool t=true);
         virtual uint8_t move (const Pos p); // polymorphic, default for N, B, R, Q.
     protected:
         bool is_white; // stores if the piece is White (1) or Black (0).
-        uint8_t*** pgb; // *pgb = board, pgb = &board.
         /* One-Line Functions */
-        Pos get_pos () { return mci.position; }
-        void update_pos (Pos p) { mci.position = p; }
+        uint8_t** get_board (void) { return *mci.pgb; }
         void is_first_move (bool x) { mci.first_move = x; }
+        void update_pos (Pos p) { mci.position = p; }
+        void update_last_move (const Pos p_f, const Pos p_t, const std::string& s_pt) { *mci.lm_ptr = {p_f, p_t, s_pt}; }
     private:
         MCI mci; // Piece movement controller
         virtual std::string get_type (void) = 0; // pure polymorphic function
@@ -71,52 +79,53 @@ namespace chess {
     
     class Pawn : public Piece {
     public:
-    protected:
-    private:
         using Piece :: Piece;
         uint8_t move (const Pos p);
+    protected:
+    private:
         std::string get_type (void) { return "Pawn"; }
         uint8_t promotion (void);
     };
     
     class Knight : public Piece {
     public:
+        using Piece :: Piece;
     protected:
     private:
-        using Piece :: Piece;
         std::string get_type (void) { return "Knight"; }
     };
     
     class Bishop : public Piece {
     public:
+        using Piece :: Piece;
     protected:
     private:
-        using Piece :: Piece;
         std::string get_type (void) { return "Bishop"; }
     };
     
     class Rook : public Piece {
     public:
+        using Piece :: Piece;
+        void castled (Pos p) { update_pos(p); }
     protected:
     private:
-        using Piece :: Piece;
         std::string get_type (void) { return "Rook"; }
     };
     
     class Queen : public Piece {
     public:
+        using Piece :: Piece;
     protected:
     private:
-        using Piece :: Piece;
         std::string get_type (void) { return "Queen"; }
     };
     
     class King : public Piece {
     public:
-    protected:
-    private:
         using Piece :: Piece;
         uint8_t move (const Pos p);
+    protected:
+    private:
         std::string get_type (void) { return "King"; }
     };
     /****************************************************************/
@@ -139,6 +148,7 @@ namespace chess {
     private:
         // stores if the player White (1) or Black (0).
         bool is_white;
+        LM lm;
         // 8 bit-flags per square.
         uint8_t** board;
         /**************************************************/
@@ -184,7 +194,7 @@ namespace chess {
         void pb_ptr (std::vector<PiecePtr>& v1, std::vector<PiecePtr>& v2, const PiecePtr& pp, const bool c) { c ? v1.push_back(std::move(pp)) : v2.push_back(std::move(pp)); }
         void rm_dlt (std::vector<PiecePtr>& v, const Pos p2) {
             v.erase (std::remove_if (v.begin(), v.end(), [p2] (PiecePtr piece) -> bool {
-                Pos p = piece->check_position();
+                Pos p = piece->get_pos ();
                 if (p == p2) return true;
                 return false;
             }), v.end());
