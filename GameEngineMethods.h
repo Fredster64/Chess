@@ -80,6 +80,9 @@ namespace chess {
                     }
                 }
             } while (!allowed);
+            
+            lm.print_lm();
+            
             // check if valid moves exist:
             if (counter == 0) { game_status |= 0x80; }
             // check if in 'Check':
@@ -96,7 +99,7 @@ namespace chess {
     
     void GameEngine :: place_pawns (const bool c, const int8_t r) {
         for (int8_t i = 0; i < 8; ++i) {
-            PawnPtr pawn (new Pawn (c, {i, r}, board));
+            PawnPtr pawn (new Pawn (c, {i, r}, lm, board));
             this->pb_ptr (white_pieces, black_pieces, pawn, c);
             board[i][r] |= c ? 0x41 : 0x81;
         }
@@ -104,7 +107,7 @@ namespace chess {
     
     void GameEngine :: place_knights (const bool c, const int8_t r) {
         for (int8_t i = 1; i < 8; i += 5) {
-            KnightPtr knight (new Knight (c, {i, r}, board));
+            KnightPtr knight (new Knight (c, {i, r}, lm, board));
             this->pb_ptr (white_pieces, black_pieces, knight, c);
             board[i][r] |= c ? 0x42 : 0x82;
         }
@@ -112,7 +115,7 @@ namespace chess {
     
     void GameEngine :: place_bishops (const bool c, const int8_t r) {
         for (int8_t i = 2; i < 8; i += 3) {
-            BishopPtr bishop (new Bishop (c, {i, r}, board));
+            BishopPtr bishop (new Bishop (c, {i, r}, lm, board));
             this->pb_ptr (white_pieces, black_pieces, bishop, c);
             board[i][r] |= c ? 0x44 : 0x84;
         }
@@ -120,17 +123,17 @@ namespace chess {
     
     void GameEngine :: place_rooks (const bool c, const int8_t r) {
         for (int8_t i = 0; i < 8; i+=7) {
-            RookPtr rook (new Rook (c, {i, r}, board));
+            RookPtr rook (new Rook (c, {i, r}, lm, board));
             this->pb_ptr (white_pieces, black_pieces, rook, c);
             board[i][r] |= c ? 0x48 : 0x88;
         }
     }
     
     void GameEngine :: place_royals (const bool c, const int8_t r) {
-        QueenPtr queen (new Queen (c, {3, r}, board));
+        QueenPtr queen (new Queen (c, {3, r}, lm, board));
         this->pb_ptr (white_pieces, black_pieces, queen, c);
         board[3][r] |= c ? 0x50 : 0x90;
-        KingPtr king (new King (c, {4, r}, board));
+        KingPtr king (new King (c, {4, r}, lm, board));
         this->pb_ptr (white_pieces, black_pieces, king, c);
         board[4][r] |= c ? 0x60 : 0xA0;
     }
@@ -150,25 +153,25 @@ namespace chess {
             this->rm_dlt ((c ? white_pieces : black_pieces), pto); // delete the pawn
             switch (pr) {
                 case 0x01: {
-                    KnightPtr knight (new Knight (is_white, pto, board));
+                    KnightPtr knight (new Knight (is_white, pto, lm, board));
                     board[pto.x][pto.y] = (c ? 0x42 : 0x82);
                     this->pb_ptr (white_pieces, black_pieces, knight, c);
                     break;
                 }
                 case 0x02: {
-                    BishopPtr bishop (new Bishop (is_white, pto, board));
+                    BishopPtr bishop (new Bishop (is_white, pto, lm, board));
                     board[pto.x][pto.y] = (c ? 0x44 : 0x84);
                     this->pb_ptr (white_pieces, black_pieces, bishop, c);
                     break;
                 }
                 case 0x04: {
-                    RookPtr rook (new Rook (is_white, pto, board));
+                    RookPtr rook (new Rook (is_white, pto, lm, board));
                     board[pto.x][pto.y] = (c ? 0x48 : 0x88);
                     this->pb_ptr (white_pieces, black_pieces, rook, c);
                     break;
                 }
                 case 0x08: {
-                    QueenPtr queen (new Queen (is_white, pto, board));
+                    QueenPtr queen (new Queen (is_white, pto, lm, board));
                     board[pto.x][pto.y] = (c ? 0x50 : 0x90);
                     this->pb_ptr (white_pieces, black_pieces, queen, c);
                     break;

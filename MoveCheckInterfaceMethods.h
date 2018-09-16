@@ -16,8 +16,16 @@ namespace chess {
 
         if (piece_type == "Pawn") {
 
-            // will work on 'check' case conditions and en-passant rules later.
             Pos d0[2] = {{1, 0}, {0, 1}};
+            
+            
+            
+//            if ((b[p.x + 1][p.y] ))
+            
+            
+            
+            
+            
             w ? p += d0[1] : p -= d0[1]; // adds/subtracts one y-unit from white/black.
             comp = w ? 0x80 : 0x40;
             if (p.x < 7) {

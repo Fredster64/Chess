@@ -9,10 +9,11 @@
 
 namespace chess {
     
-    Piece :: Piece (const bool piece_colour, const Pos coordinates, /*uint8_t& status_bits,*/ uint8_t**& gb) {
+    Piece :: Piece (const bool piece_colour, const Pos coordinates, LM& last_move, uint8_t**& gb) {
         is_white = piece_colour;
         mci.position = coordinates;
         mci.first_move = true;
+        mci.lm_ptr = &last_move;
         pgb = &gb; // copy the address of the game board to a pointer.
         mci.gb = &gb; // copy the address of the game board to the MCI.
     }
@@ -20,6 +21,7 @@ namespace chess {
     Piece :: ~Piece (void) {
         valid_moves.clear();
         pgb = nullptr;
+        mci.lm_ptr = nullptr;
     };
     
     void Piece :: print_info (void) {
@@ -42,7 +44,7 @@ namespace chess {
             }
         }
         if (valid == 1) {
-            this->update_last_move(p_from, p_to);
+            this->update_last_move(p_from, p_to, get_type());
             uint8_t temp = b[p_from.x][p_from.y];
             b[p_from.x][p_from.y] = 0;
             this->update_pos (p_to);
