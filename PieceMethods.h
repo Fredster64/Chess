@@ -52,15 +52,6 @@ namespace chess {
             std::cout << "This move is invalid - it would put you in check." << std::endl;
         
             return 0;
-            
-//            temp = b[p_after.x][p_after.y];
-//            b[p_after.x][p_after.y] = 0;
-//            mci.position = p_before;
-//            b[p_before.x][p_before.y] = temp;
-//            // Let the player know what happened
-//            std::cout << "This move is invalid - it would put you in check." << std::endl;
-//            // Move was invalid
-//            return 0;
         }
     }
     
