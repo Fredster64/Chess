@@ -57,6 +57,11 @@ namespace chess {
         void print_info (void);
         void check_moves (std::vector<Pos>& v, bool t=true);
         virtual std::string get_type (void) = 0; // pure polymorphic function
+        
+        // Does the check test and invalidates move if necessary
+        // Returns valid
+        uint8_t if_in_check (bool is_white, unit8_t** b, Pos p_before, Pos p_after);
+        
         virtual uint8_t move (const Pos p); // polymorphic, default for N, B, R, Q.
     protected:
         Pos get_pos () { return mci.position; }
