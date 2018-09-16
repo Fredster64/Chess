@@ -10,21 +10,22 @@
 
 namespace chess {
     
-    Piece :: Piece (const bool piece_colour, const Pos coordinates, /*uint8_t& status_bits,*/ uint8_t**& gb) {
+    Piece :: Piece (const bool piece_colour, const Pos coordinates, LM& last_move, uint8_t**& gb) {
         is_white = piece_colour;
         mci.position = coordinates;
         mci.first_move = true;
-        pgb = &gb; // copy the address of the game board to a pointer.
-        mci.gb = &gb; // copy the address of the game board to the MCI.
+        mci.lm_ptr = &last_move;
+        mci.pgb = &gb; // copy the address of the game board to the MCI.
     }
     
     Piece :: ~Piece (void) {
-        valid_moves.clear();
-        pgb = nullptr;
+        valid_moves.clear ();
+        mci.pgb = nullptr;
+        mci.lm_ptr = nullptr;
     };
     
     void Piece :: print_info (void) {
-        std::cout << (is_white ? "White " : "Black ") << this->get_type() << " at " << static_cast<char>(mci.position.x + 'A') << static_cast<int>(mci.position.y + 1) << std::endl;
+        std::cout << (is_white ? "White " : "Black ") << this->get_type () << " at " << static_cast<char>(mci.position.x + 'A') << static_cast<int>(mci.position.y + 1) << std::endl;
     }
     
     void Piece :: check_moves (std::vector<Pos>& v, bool t) { // Calls the check_moves function in the interface for this piece
@@ -33,7 +34,7 @@ namespace chess {
     
     // Resets the board to pre-move position if the move leaves the player in check
     uint8_t Piece :: if_in_check (Pos p_before, Pos p_after) {
-        uint8_t** b = *pgb;
+        uint8_t** b = *mci.gb;
         if( !in_check( is_white, b) ) {return 1;}
         else {
             temp = b[p_after.x][p_after.y];
@@ -47,22 +48,24 @@ namespace chess {
         }
     }
     
-    uint8_t Piece :: move (const Pos p) {
+    uint8_t Piece :: move (const Pos p_to) {
+      
         // the default function for moving. Exceptions only for p and K.
-        uint8_t** b = *pgb;
-        Pos p_now = mci.position;
+        uint8_t** b = this->get_board ();
+        Pos p_from = this->get_pos ();
         uint8_t valid = 0;
         for (const auto& m : valid_moves) {
-            if (m == p) {
+            if (m == p_to) {
                 valid = 1;
                 break;
             }
         }
         if (valid == 1) {
-            uint8_t temp = b[p_now.x][p_now.y];
-            b[p_now.x][p_now.y] = 0;
-            mci.position = p;
-            b[p.x][p.y] = temp;
+            this->update_last_move(p_from, p_to, get_type ());
+            uint8_t temp = b[p_from.x][p_from.y];
+            b[p_from.x][p_from.y] = 0;
+            this->update_pos (p_to);
+            b[p_to.x][p_to.y] = temp;
             // Reset and invalidate move if it leaves the player in check
             valid = if_in_check( p_now, p );
         }
