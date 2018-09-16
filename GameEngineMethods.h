@@ -20,6 +20,7 @@ namespace chess {
             board[i] = new uint8_t[8];
             for (int8_t j = 0; j < 8; ++j) { board[i][j] = 0; }
         }
+        lm = {{0, 0}, {0, 0}, ""}; // no last move exists yet.
         bool colour = true;
         int8_t row = 1;
         do {
@@ -141,16 +142,16 @@ namespace chess {
     bool GameEngine :: move_piece (Pos pfrom, Pos pto) {
         bool r = false;
         uint8_t pr;
-        for (const auto& piece : ((game_status & 0x1) > 0 ? white_pieces : black_pieces)) {
+        bool c = (game_status & 0x1) > 0;
+        for (const auto& piece : (c ? white_pieces : black_pieces)) {
             Pos temp = piece->check_position();
             if ((pfrom.x == temp.x) and (pfrom.y == temp.y)) { pr = piece->move(pto); }
             piece->valid_moves.clear();
         }
         if ((pr & 0x01) > 0) { r = true; }
         pr >>= 1;
-        if (pr > 0) { // promotion condition for pawns
-            bool c = (game_status & 0x1) > 0;
-            this->rm_dlt ((c ? white_pieces : black_pieces), pto); // delete the pawn
+        if (pr > 0) { // promotion/en-passant condition for pawns
+            if (pr < 0x10) this->rm_dlt ((c ? white_pieces : black_pieces), pto); // delete the pawn
             switch (pr) {
                 case 0x01: {
                     KnightPtr knight (new Knight (is_white, pto, lm, board));
@@ -176,10 +177,20 @@ namespace chess {
                     this->pb_ptr (white_pieces, black_pieces, queen, c);
                     break;
                 }
+                case 0x40: { // en-passant
+                    Pos p_dlt;
+                    if (c) {
+                        p_dlt = {pto.x, 4};
+                    }
+                    else {
+                        p_dlt = {pto.x, 3};
+                    }
+                    this->rm_dlt ((c ? white_pieces : black_pieces), p_dlt);
+                }
             }
         }
         // delete pieces of the opposite colour if taken
-        this->rm_dlt (((game_status & 0x1) == 0 ? white_pieces : black_pieces), pto);
+        this->rm_dlt ((c ? black_pieces : white_pieces), pto);
         return r;
     }
     

@@ -18,14 +18,19 @@ namespace chess {
 
             Pos d0[2] = {{1, 0}, {0, 1}};
             
-            
-            
-//            if ((b[p.x + 1][p.y] ))
-            
-            
-            
-            
-            
+            // En-Passant
+            if (lm_ptr->lpt == "Pawn" and (t)) {
+                if ((lm_ptr->lmf.y == (w ? 6 : 1)) and (lm_ptr->lmt.y == (w ? 4 : 3)) and (p.y == (w ? 4 : 3))) {
+                    if (((lm_ptr->lmt.x) == (p.x + 1)) and p.x < 6) {
+                        w ? p += d0[1] : p -= d0[1];
+                        v.push_back(p + d0[0]);
+                    } else if (((lm_ptr->lmt.x) == (p.x - 1)) and p.x > 1) {
+                        w ? p += d0[1] : p -= d0[1];
+                        v.push_back(p - d0[0]);
+                    }
+                }
+            }
+            p = position; // resets position in case changed by en-passant.
             w ? p += d0[1] : p -= d0[1]; // adds/subtracts one y-unit from white/black.
             comp = w ? 0x80 : 0x40;
             if (p.x < 7) {

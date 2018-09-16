@@ -25,8 +25,23 @@ namespace chess {
         if (valid == 1) {
             this->is_first_move (false);
             this->update_last_move(p_from, p_to, "Pawn");
+            // en-passant modification
+            if ((p_from.x != p_to.x) and (b[p_to.x][p_to.y] == 0)) { // if it moves diagonally
+                // remove the piece directly to the side and move diagonally.
+                valid = 0x80;
+                Pos p_dlt;
+                if (is_white) {
+                    p_dlt = {p_to.x, 4};
+                }
+                else {
+                    p_dlt = {p_to.x, 3};
+                }
+                b[p_dlt.x][p_dlt.y] = 0;
+            }
+            
             uint8_t temp = b[p_from.x][p_from.y];
             b[p_from.x][p_from.y] = 0;
+            // promotion modification
             if (p_to.y == 0 or p_to.y == 7) {
                 valid |= promotion ();
             } else {
