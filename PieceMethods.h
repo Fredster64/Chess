@@ -14,13 +14,12 @@ namespace chess {
         mci.position = coordinates;
         mci.first_move = true;
         mci.lm_ptr = &last_move;
-        pgb = &gb; // copy the address of the game board to a pointer.
-        mci.gb = &gb; // copy the address of the game board to the MCI.
+        mci.pgb = &gb; // copy the address of the game board to the MCI.
     }
     
     Piece :: ~Piece (void) {
         valid_moves.clear();
-        pgb = nullptr;
+        mci.pgb = nullptr;
         mci.lm_ptr = nullptr;
     };
     
@@ -34,7 +33,7 @@ namespace chess {
     
     uint8_t Piece :: move (const Pos p_to) {
         // the default function for moving. Exceptions only for p and K.
-        uint8_t** b = *pgb;
+        uint8_t** b = this->get_board ();
         Pos p_from = this->get_pos ();
         uint8_t valid = 0;
         for (const auto& m : valid_moves) {

@@ -11,7 +11,7 @@ namespace chess {
     
     uint8_t Pawn :: move (Pos p_to) {
         // if first move occurs, it must be set to false.
-        uint8_t** b = *pgb;
+        uint8_t** b = this->get_board ();
         Pos p_from = this->get_pos ();
         p_from.print_pos ();
         p_to.print_pos ();
@@ -54,7 +54,7 @@ namespace chess {
 
     uint8_t King :: move (Pos p_to) {
         // an exception case is made for the castling move (not yet implemented).
-        uint8_t** b = *pgb;
+        uint8_t** b = this->get_board ();
         Pos p_from = this->get_pos ();
         uint8_t valid = 0;
         for (const auto& m : valid_moves) {

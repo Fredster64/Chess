@@ -49,7 +49,7 @@ namespace chess {
     typedef struct MovementCheckerInterface { // Movement-Checker Interface
         Pos position;
         bool first_move;
-        uint8_t*** gb; // *gb = board, gb = &board.
+        uint8_t*** pgb; // *gb = board, gb = &board.
         void move_checker (std::vector<Pos>& v, std::string piece_type, bool w, bool t); // Handles movement of all pieces
         void pb_inc (Pos p, std::vector<Pos>& v, Pos inc, bool is_white, bool t);
         LM* lm_ptr;
@@ -67,16 +67,12 @@ namespace chess {
         virtual uint8_t move (const Pos p); // polymorphic, default for N, B, R, Q.
     protected:
         bool is_white; // stores if the piece is White (1) or Black (0).
-        uint8_t*** pgb; // *pgb = board, pgb = &board.
         /* One-Line Functions */
         Pos get_pos () { return mci.position; }
+        uint8_t** get_board () { return *mci.pgb; }
         void update_pos (Pos p) { mci.position = p; }
         void is_first_move (bool x) { mci.first_move = x; }
-        void update_last_move (Pos p_f, Pos p_t, std::string s_pt) {
-            mci.lm_ptr->lmf = p_f;
-            mci.lm_ptr->lmt = p_t;
-            mci.lm_ptr->lpt = s_pt;
-        }
+        void update_last_move (Pos p_f, Pos p_t, std::string s_pt) { *mci.lm_ptr = {p_f, p_t, s_pt}; }
     private:
         MCI mci; // Piece movement controller
         virtual std::string get_type (void) = 0; // pure polymorphic function

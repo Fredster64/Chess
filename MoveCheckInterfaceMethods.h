@@ -10,7 +10,7 @@ namespace chess {
     
     void MCI :: move_checker (std::vector<Pos>& v, std::string piece_type, bool w, bool t) {
   
-        uint8_t** b = *gb; // put the game board array in the current scope
+        uint8_t** b = *pgb; // put the game board array in the current scope
         Pos p = position;
         uint8_t comp;
 
@@ -180,7 +180,7 @@ namespace chess {
     }
     
     void MCI :: pb_inc (Pos p, std::vector<Pos>& v, Pos inc, bool is_white, bool t) {
-        uint8_t** b = *gb; // put the game board array in the current scope
+        uint8_t** b = *pgb; // put the game board array in the current scope
         uint8_t comp = is_white ? 0x40 : 0x80;
         while (p.x >= 0 and p.y >= 0 and p.x < 8 and p.y < 8) {
             if ((b[p.x][p.y] & 0xC0) == comp) {
