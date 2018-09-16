@@ -37,6 +37,18 @@ namespace chess {
                 this->update_pos (p_now);
                 b[p.x][p.y] = temp;
             }
+           // 'Check' check 
+           if ( in_check( is_white, b ) ) {
+              // Revert back to pre-move board position 
+              temp = b[p.x][p.y];
+              b[p.x][p.y] = 0;
+              mci.position = p.now; 
+              b[p_now.x][p_now.y] = temp;
+              // Let the player know what happened 
+              std::cout << "This move is invalid - it would put you in check." << endl;
+              // Move was invalid 
+              valid = 0;
+           }
         }
         return valid;
     }
@@ -57,6 +69,18 @@ namespace chess {
             b[p_now.x][p_now.y] = 0;
             this->update_pos (p_now);
             b[p.x][p.y] = temp;
+        }
+        // 'Check' check
+       if ( in_check( is_white, b ) ) {
+            // Revert back to pre-move board position 
+            temp = b[p.x][p.y];
+            b[p.x][p.y] = 0;
+            mci.position = p.now; 
+            b[p_now.x][p_now.y] = temp;
+            // Let the player know what happened 
+            std::cout << "This move is invalid - it would put you in check." << endl;
+            // Move was invalid 
+            valid = 0;
         }
         return valid;
     }
