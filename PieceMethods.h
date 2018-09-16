@@ -6,6 +6,7 @@
 #include <string>
 
 #include "ChessClasses.h" // for Class Definitions
+#include "ChessIncludes.h" // for in_check
 
 namespace chess {
     
@@ -46,12 +47,18 @@ namespace chess {
             b[p_now.x][p_now.y] = 0;
             mci.position = p;
             b[p.x][p.y] = temp;
-            /* We can implement 'check' here: 
-              -- Keep a copy of p_now 
-              -- Perform a 'check' test (method in GameEngine I think, could move somewhere else to make it easily accessible)
-              -- If we're in check, revert back to pre-move board position (i.e. swap p and p_now back)
-              -- Print some kind of "you're in check!" message, and try again
-              -- Set valid = 0 so that the GameEngine thinks we've made an invalid move */
+            
+            if ( in_check( is_white, b ) ) {
+                // Revert back to pre-move board position 
+                temp = b[p.x][p.y];
+                b[p.x][p.y] = 0;
+                mci.position = p.now; 
+                b[p_now.x][p_now.y] = temp;
+                // Let the player know what happened 
+                std::cout << "This move is invalid - it would put you in check." << endl;
+                // Move was invalid 
+                valid = 0;
+            }
         }
         return valid;
     }
