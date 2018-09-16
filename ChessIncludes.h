@@ -1,6 +1,8 @@
 #ifndef CHESSINCLUDES_H
 #define CHESSINCLUDES_H
 
+#include <algorithm>
+
 #include "ChessClasses.h" // Class definitions
 
 /* All custom, non-member function prototypes go here. */
@@ -28,14 +30,17 @@ bool vec_search (const std::vector<T>& v, const T item) {
 }
 template <typename T>
 void rm_dupes (std::vector<T>& v) {
-    for (int8_t i = v.size() - 1; i >= 0; --i) {
-        for (int8_t j = i - 1; j >= 0; --j) {
-            if (v[i] == v[j]) {
-                v.erase(v.begin() + i);
-                break;
+    int8_t k = 0;
+    v.erase (std::remove_if (v.begin(), v.end(), [&v, &k] (T t) -> bool {
+        for (int8_t i = v.size() - 1; i > k; --i) {
+            if (t == v[i]) {
+                ++k;
+                return true;
             }
         }
-    }
+        ++k;
+        return false;
+    }), v.end());
 }
 
 /********************************************************/

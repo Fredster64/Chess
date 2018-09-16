@@ -10,14 +10,27 @@ namespace chess {
     
     void MCI :: move_checker (std::vector<Pos>& v, std::string piece_type, bool w, bool t) {
   
-        uint8_t** b = *gb; // put the game board array in the current scope
+        uint8_t** b = *pgb; // put the game board array in the current scope
         Pos p = position;
         uint8_t comp;
 
         if (piece_type == "Pawn") {
 
-            // will work on 'check' case conditions and en-passant rules later.
             Pos d0[2] = {{1, 0}, {0, 1}};
+            
+            // En-Passant
+            if (lm_ptr->lpt == "Pawn" and (t)) {
+                if ((lm_ptr->lmf.y == (w ? 6 : 1)) and (lm_ptr->lmt.y == (w ? 4 : 3)) and (p.y == (w ? 4 : 3))) {
+                    if (((lm_ptr->lmt.x) == (p.x + 1)) and p.x < 6) {
+                        w ? p += d0[1] : p -= d0[1];
+                        v.push_back(p + d0[0]);
+                    } else if (((lm_ptr->lmt.x) == (p.x - 1)) and p.x > 1) {
+                        w ? p += d0[1] : p -= d0[1];
+                        v.push_back(p - d0[0]);
+                    }
+                }
+            }
+            p = position; // resets position in case changed by en-passant.
             w ? p += d0[1] : p -= d0[1]; // adds/subtracts one y-unit from white/black.
             comp = w ? 0x80 : 0x40;
             if (p.x < 7) {
@@ -110,6 +123,23 @@ namespace chess {
 
         if (piece_type == "King") {
             
+            // castling
+            Pos d3 = {2, 0};
+            
+            if (first_move) {
+                // KS-Castle
+                if ((b[p.x + 1][p.y] == 0) and (b[p.x + 2][p.y] == 0) and (b[p.x + 3][p.y] == w ? 0x48 : 0x88)) {
+                    v.push_back(p + d3);
+                }
+                // QS-Castle
+                if ((b[p.x - 1][p.y] == 0) and (b[p.x - 2][p.y] == 0) and (b[p.x - 3][p.y] == 0) and (b[p.x - 4][p.y] == w ? 0x48 : 0x88)) {
+                    v.push_back(p - d3);
+                }
+            }
+            
+            
+            
+            
             int8_t posx = position.x + 1;
             int8_t posy = position.y + 1;
             
@@ -161,13 +191,13 @@ namespace chess {
                     v.push_back({posx, posy});
                 }
             }
-            for (auto& move : v) { move.print_pos(); }
+//            for (auto& move : v) { move.print_pos(); }
             return;
         }
     }
     
     void MCI :: pb_inc (Pos p, std::vector<Pos>& v, Pos inc, bool is_white, bool t) {
-        uint8_t** b = *gb; // put the game board array in the current scope
+        uint8_t** b = *pgb; // put the game board array in the current scope
         uint8_t comp = is_white ? 0x40 : 0x80;
         while (p.x >= 0 and p.y >= 0 and p.x < 8 and p.y < 8) {
             if ((b[p.x][p.y] & 0xC0) == comp) {
