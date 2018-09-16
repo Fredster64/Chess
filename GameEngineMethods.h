@@ -92,6 +92,25 @@ namespace chess {
             // if both true then in Checkmate:
             if ((game_status & 0xA0) == 0xA0) { game_status |= 0x40; }
         }
+        // Need something to happen when the game ends
+        std::string result = "drawn";
+        std::string game_end = "stalemate";
+        
+        // Change result if checkmate
+        if( game_status & 0x40 > 0 ) {
+        // game_status changes before this check is made. 
+        // e.g. if the white player is checkmated, game_status will say that it is their turn 
+        // because black has just moved and game_status has been updated (line 72)
+        // So, the player has won just in case, either: 
+        // -- game_status says it's black's turn and the player is white; or
+        // -- game_status says it's white's turn and the player is black.
+        // That's what this piece of logic tests.
+            ( ( is_white & ( game_status & 0x01 == 0 ) ) || ( !is_white & ( game_status & 0x01 > 0 ) ) ) ? (result = "won") : (result = "lost");
+            game_end = "checkmate";
+        }
+        // Either way, print the game result.
+        std::cout << "The game has ended in " << game_end << ". You have " << result << "." << endl;
+        return;
     }
     
     void GameEngine :: place_pawns (const bool c, const int8_t r) {
